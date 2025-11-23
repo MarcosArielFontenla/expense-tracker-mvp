@@ -8,11 +8,26 @@ import { BudgetList } from './features/budgets/budget-list/budget-list';
 import { BudgetForm } from './features/budgets/budget-form/budget-form';
 import { Layout } from './core/layout/layout';
 import { NotFound } from './core/pages/not-found/not-found';
+import { Login } from './features/auth/login/login';
+import { Register } from './features/auth/register/register';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+    // Public routes
+    {
+        path: 'login',
+        component: Login
+    },
+    {
+        path: 'register',
+        component: Register
+    },
+
+    // Protected routes
     {
         path: '',
         component: Layout,
+        canActivate: [authGuard],
         children: [
             {
                 path: '',

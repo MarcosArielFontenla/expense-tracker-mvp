@@ -1,0 +1,78 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 px-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">💰 ExpenseTracker</h1>
+            <p class="text-gray-600 mt-2">Crea tu cuenta</p>
+        </div>
+
+        @if (error) {
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 animate-slide-in">
+            <p class="text-red-800 text-sm">{{ error }}</p>
+        </div>
+        }
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+            <div>
+                <label for="name" class="label">Nombre</label>
+                <input id="name" type="text" formControlName="name" class="input-field"
+                    [class.border-red-500]="name?.invalid && name?.touched" placeholder="Tu nombre completo" />
+                @if (name?.invalid && name?.touched) {
+                <p class="mt-1 text-sm text-red-600">El nombre debe tener al menos 3 caracteres</p>
+                }
+            </div>
+
+            <div>
+                <label for="email" class="label">Email</label>
+                <input id="email" type="email" formControlName="email" class="input-field"
+                    [class.border-red-500]="email?.invalid && email?.touched" placeholder="tu@email.com" />
+                @if (email?.invalid && email?.touched) {
+                <p class="mt-1 text-sm text-red-600">Ingresa un email válido</p>
+                }
+            </div>
+
+            <div>
+                <label for="password" class="label">Contraseña</label>
+                <input id="password" type="password" formControlName="password" class="input-field"
+                    [class.border-red-500]="password?.invalid && password?.touched" placeholder="••••••••" />
+                @if (password?.invalid && password?.touched) {
+                <p class="mt-1 text-sm text-red-600">La contraseña debe tener al menos 6 caracteres</p>
+                }
+            </div>
+
+            <div>
+                <label for="confirmPassword" class="label">Confirmar Contraseña</label>
+                <input id="confirmPassword" type="password" formControlName="confirmPassword" class="input-field"
+                    [class.border-red-500]="confirmPassword?.invalid && confirmPassword?.touched"
+                    placeholder="••••••••" />
+                @if (confirmPassword?.invalid && confirmPassword?.touched) {
+                @if (confirmPassword?.errors?.['required']) {
+                <p class="mt-1 text-sm text-red-600">Debes confirmar la contraseña</p>
+                }
+                @if (confirmPassword?.errors?.['passwordMismatch']) {
+                <p class="mt-1 text-sm text-red-600">Las contraseñas no coinciden</p>
+                }
+                }
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full" [disabled]="registerForm.invalid || isSubmitting">
+                @if (isSubmitting) {
+                <span class="flex items-center justify-center gap-2">
+                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Registrando...
+                </span>
+                } @else {
+                <span>Registrarse</span>
+                }
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-gray-600 text-sm">
+                ¿Ya tienes cuenta?
+                <a routerLink="/login" class="text-primary-600 hover:text-primary-700 font-medium">
+                    Inicia sesión aquí
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
