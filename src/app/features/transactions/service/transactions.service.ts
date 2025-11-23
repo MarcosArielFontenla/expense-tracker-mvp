@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { Transaction, TransactionDTO, TransactionFilter, MonthlySummary } from '../../../core/models/transaction.model';
 import { environment } from '../../../environments/environment.development';
 
@@ -8,8 +8,8 @@ import { environment } from '../../../environments/environment.development';
     providedIn: 'root'
 })
 export class TransactionsService {
-    private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
-    public transactions$ = this.transactionsSubject.asObservable();
+    private refreshSubject = new Subject<void>();
+    public refresh$ = this.refreshSubject.asObservable();
 
     private apiUrl = `${environment.apiUrl}/transactions`;
 
@@ -25,9 +25,7 @@ export class TransactionsService {
             if (filter.endDate) params = params.set('endDate', filter.endDate.toISOString());
         }
 
-        return this.http.get<Transaction[]>(this.apiUrl, { params }).pipe(
-            tap(transactions => this.transactionsSubject.next(transactions))
-        );
+        return this.http.get<Transaction[]>(this.apiUrl, { params });
     }
 
     getMonthlySummary(month: number, year: number): Observable<MonthlySummary> {
@@ -57,6 +55,6 @@ export class TransactionsService {
     }
 
     private refreshTransactions(): void {
-        this.getTransactions().subscribe();
+        this.refreshSubject.next();
     }
 }

@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { TransactionsService } from '../transactions/service/transactions.service';
@@ -27,16 +27,19 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   constructor(
     private transactionsService: TransactionsService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
-    this.loadDashboardData();
-
-    // Refresh when transactions change
-    this.transactionsService.transactions$.subscribe(() => {
+    if (isPlatformBrowser(this.platformId)) {
       this.loadDashboardData();
-    });
+
+      // Refresh when transactions change
+      this.transactionsService.refresh$.subscribe(() => {
+        this.loadDashboardData();
+      });
+    }
   }
 
   ngAfterViewInit(): void {

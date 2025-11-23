@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { CategoriesService } from '../services/categories.service';
 import { Category } from '../../../core/models/category.model';
@@ -20,17 +20,20 @@ export class CategoriesList implements OnInit {
 
   constructor(
     private categoriesService: CategoriesService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
-    this.loadCategories();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadCategories();
 
-    // Subscribe to category changes
-    this.categoriesService.categories$.subscribe(categories => {
-      this.categories = categories;
-      this.applyFilter();
-    });
+      // Subscribe to category changes
+      this.categoriesService.categories$.subscribe(categories => {
+        this.categories = categories;
+        this.applyFilter();
+      });
+    }
   }
 
   loadCategories(): void {
