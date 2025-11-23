@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, DatePipe, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TransactionsService } from '../service/transactions.service';
@@ -30,17 +30,20 @@ export class TransactionsList implements OnInit {
   constructor(
     private transactionsService: TransactionsService,
     private categoriesService: CategoriesService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.loadTransactions();
-
-    // Subscribe to updates
-    this.transactionsService.transactions$.subscribe(() => {
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadCategories();
       this.loadTransactions();
-    });
+
+      // Subscribe to updates
+      this.transactionsService.refresh$.subscribe(() => {
+        this.loadTransactions();
+      });
+    }
   }
 
   loadCategories(): void {
