@@ -6,60 +6,72 @@ import { TransactionsList } from './features/transactions/transactions-list/tran
 import { TransactionForm } from './features/transactions/transaction-form/transaction-form';
 import { BudgetList } from './features/budgets/budget-list/budget-list';
 import { BudgetForm } from './features/budgets/budget-form/budget-form';
+import { Layout } from './core/layout/layout';
+import { NotFound } from './core/pages/not-found/not-found';
 
 export const routes: Routes = [
-    // Default route
     {
         path: '',
-        redirectTo: '/dashboard',
-        pathMatch: 'full'
-    },
+        component: Layout,
+        children: [
+            {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+            },
+            // Dashboard
+            {
+                path: 'dashboard',
+                component: Dashboard
+            },
 
-    // Dashboard
-    {
-        path: 'dashboard',
-        component: Dashboard
-    },
+            // Categories routes
+            {
+                path: 'categories',
+                component: CategoriesList
+            },
+            {
+                path: 'categories/new',
+                component: CategoryForm
+            },
+            {
+                path: 'categories/edit/:id',
+                component: CategoryForm
+            },
 
-    // Categories routes
-    {
-        path: 'categories',
-        component: CategoriesList
-    },
-    {
-        path: 'categories/new',
-        component: CategoryForm
-    },
-    {
-        path: 'categories/edit/:id',
-        component: CategoryForm
-    },
+            // Transactions routes
+            {
+                path: 'transactions',
+                component: TransactionsList
+            },
+            {
+                path: 'transactions/new',
+                component: TransactionForm
+            },
+            {
+                path: 'transactions/edit/:id',
+                component: TransactionForm
+            },
 
-    // Transactions routes
-    {
-        path: 'transactions',
-        component: TransactionsList
-    },
-    {
-        path: 'transactions/new',
-        component: TransactionForm
-    },
-    {
-        path: 'transactions/edit/:id',
-        component: TransactionForm
-    },
+            // Budgets routes
+            {
+                path: 'budgets',
+                component: BudgetList
+            },
+            {
+                path: 'budgets/new',
+                component: BudgetForm
+            },
+            {
+                path: 'budgets/edit/:id',
+                component: BudgetForm
+            },
 
-    // Budgets routes
-    {
-        path: 'budgets',
-        component: BudgetList
-    },
-    {
-        path: 'budgets/new',
-        component: BudgetForm
-    },
-    {
-        path: 'budgets/edit/:id',
-        component: BudgetForm
+            // 404 Wildcard
+            {
+                path: '**',
+                component: NotFound
+            }
+        ]
     }
 ];
