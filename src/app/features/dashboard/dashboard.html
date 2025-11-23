@@ -1,1 +1,150 @@
-<p>dashboard works!</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-600">
+                Resumen de tu actividad financiera
+            </p>
+        </div>
+        <button (click)="onNewTransaction()" class="btn btn-primary flex items-center gap-2">
+            <span class="text-xl">+</span>
+            <span class="hidden sm:inline">Registrar Movimiento</span>
+        </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Income Card -->
+        <div class="card bg-gradient-to-br from-green-50 to-white border border-green-200">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-green-800">Ingresos (Mes)</h3>
+                <div class="p-2 bg-green-100 rounded-lg text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                    </svg>
+                </div>
+            </div>
+            <div class="flex items-baseline">
+                <p class="text-3xl font-bold text-gray-900">
+                    {{ summary?.totalIncome || 0 | currency:'USD':'symbol':'1.0-0' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Expense Card -->
+        <div class="card bg-gradient-to-br from-red-50 to-white border border-red-200">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-red-800">Gastos (Mes)</h3>
+                <div class="p-2 bg-red-100 rounded-lg text-red-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                    </svg>
+                </div>
+            </div>
+            <div class="flex items-baseline">
+                <p class="text-3xl font-bold text-gray-900">
+                    {{ summary?.totalExpense || 0 | currency:'USD':'symbol':'1.0-0' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="card bg-gradient-to-br from-blue-50 to-white border border-blue-200">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-blue-800">Balance Total</h3>
+                <div class="p-2 bg-blue-100 rounded-lg text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="flex items-baseline">
+                <p class="text-3xl font-bold" [class.text-green-600]="(summary?.balance || 0) >= 0"
+                    [class.text-red-600]="(summary?.balance || 0) < 0">
+                    {{ summary?.balance || 0 | currency:'USD':'symbol':'1.0-0' }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Trend Chart -->
+        <div class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tendencia (Últimos 7 días)</h3>
+            <div class="h-64">
+                <canvas #trendChart></canvas>
+            </div>
+        </div>
+
+        <!-- Breakdown Chart -->
+        <div class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gastos por Categoría</h3>
+            <div class="h-64">
+                <canvas #breakdownChart></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Transacciones Recientes</h3>
+            <button (click)="onViewAllTransactions()"
+                class="text-sm text-primary-600 hover:text-primary-800 font-medium">
+                Ver todas
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table w-full">
+                <thead>
+                    <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="pb-3">Categoría</th>
+                        <th class="pb-3">Fecha</th>
+                        <th class="pb-3 text-right">Monto</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr *ngFor="let t of recentTransactions" class="group hover:bg-gray-50">
+                        <td class="py-3">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-sm"
+                                    [style.background-color]="(t.category?.color || '#9ca3af') + '20'">
+                                    {{ t.category?.icon || '❓' }}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">{{ t.category?.name || 'Sin categoría'
+                                        }}</p>
+                                    <p class="text-xs text-gray-500 truncate max-w-[150px]">{{ t.note || '-' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 text-sm text-gray-500">
+                            {{ t.date | date:'mediumDate' }}
+                        </td>
+                        <td class="py-3 text-right">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                                [class.bg-green-100]="t.type === 'income'" [class.text-green-800]="t.type === 'income'"
+                                [class.bg-red-100]="t.type === 'expense'" [class.text-red-800]="t.type === 'expense'">
+                                {{ t.type === 'income' ? '+' : '-' }} {{ t.amount | currency:'USD':'symbol':'1.0-0' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr *ngIf="recentTransactions.length === 0">
+                        <td colspan="3" class="py-8 text-center text-gray-500">
+                            No hay transacciones recientes
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
