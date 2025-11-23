@@ -1,0 +1,95 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { BudgetService } from '../services/budget.service';
+import { CategoriesService } from '../../categories/services/categories.service';
+import { BudgetStatus } from '../../../core/models/budget.model';
+import { Category } from '../../../core/models/category.model';
+
+@Component({
+    selector: 'app-budget-list',
+    imports: [CommonModule, RouterModule, FormsModule, CurrencyPipe],
+    templateUrl: './budget-list.html',
+    styleUrl: './budget-list.css',
+    standalone: true
+})
+export class BudgetList implements OnInit {
+    budgets: BudgetStatus[] = [];
+    categories: Map<string, Category> = new Map();
+
+    selectedMonth: number;
+    selectedYear: number;
+
+    months = [
+        { value: 1, label: 'Enero' },
+        { value: 2, label: 'Febrero' },
+        { value: 3, label: 'Marzo' },
+        { value: 4, label: 'Abril' },
+        { value: 5, label: 'Mayo' },
+        { value: 6, label: 'Junio' },
+        { value: 7, label: 'Julio' },
+        { value: 8, label: 'Agosto' },
+        { value: 9, label: 'Septiembre' },
+        { value: 10, label: 'Octubre' },
+        { value: 11, label: 'Noviembre' },
+        { value: 12, label: 'Diciembre' }
+    ];
+
+    years: number[] = [];
+
+    constructor(
+        private budgetService: BudgetService,
+        private categoriesService: CategoriesService,
+        private router: Router
+    ) {
+        const today = new Date();
+        this.selectedMonth = today.getMonth() + 1;
+        this.selectedYear = today.getFullYear();
+
+        // Generate last 5 years
+        for (let i = 0; i < 5; i++) {
+            this.years.push(this.selectedYear - i);
+        }
+    }
+
+    ngOnInit(): void {
+        this.loadCategories();
+    }
+
+    loadCategories(): void {
+        this.categoriesService.getCategories().subscribe(cats => {
+            cats.forEach(c => this.categories.set(c.id, c));
+            this.loadBudgets();
+        });
+    }
+
+    loadBudgets(): void {
+        this.budgetService.getBudgets(Number(this.selectedMonth), Number(this.selectedYear))
+            .subscribe(budgets => {
+                this.budgets = budgets;
+            });
+    }
+
+    onPeriodChange(): void {
+        this.loadBudgets();
+    }
+
+    getCategory(id: string): Category | undefined {
+        return this.categories.get(id);
+    }
+
+    getProgressBarColor(status: BudgetStatus): string {
+        if (status.isOverBudget) return 'bg-red-600';
+        if (status.hasAlert) return 'bg-yellow-500';
+        return 'bg-green-500';
+    }
+
+    deleteBudget(id: string): void {
+        if (confirm('¿Estás seguro de eliminar este presupuesto?')) {
+            this.budgetService.deleteBudget(id).subscribe(() => {
+                this.loadBudgets();
+            });
+        }
+    }
+}
