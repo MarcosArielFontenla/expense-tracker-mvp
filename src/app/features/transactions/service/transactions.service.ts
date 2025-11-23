@@ -1,155 +1,62 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Transaction, TransactionDTO, TransactionFilter, MonthlySummary } from '../../../core/models/transaction.model';
-import { CategoriesService } from '../../categories/services/categories.service';
+import { environment } from '../../../environments/environment.development';
 
 @Injectable({
     providedIn: 'root'
 })
 export class TransactionsService {
-    private transactions: Transaction[] = [];
     private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
     public transactions$ = this.transactionsSubject.asObservable();
 
-    constructor(private categoriesService: CategoriesService) {
-        this.initializeMockTransactions();
-    }
+    private apiUrl = `${environment.apiUrl}/transactions`;
 
-    private initializeMockTransactions(): void {
-        // Generate some mock data
-        const today = new Date();
-
-        // We need to wait for categories to be available to link them, 
-        // but for mock data we can just use placeholders or wait a bit.
-        // For now, let's assume we have some categories or just use IDs.
-
-        // This is a simplified mock. In a real app, we'd fetch from API.
-        this.transactions = [];
-        this.transactionsSubject.next(this.transactions);
-    }
+    constructor(private http: HttpClient) { }
 
     getTransactions(filter?: TransactionFilter): Observable<Transaction[]> {
-        let filtered = [...this.transactions];
+        let params = new HttpParams();
 
         if (filter) {
-            if (filter.type) {
-                filtered = filtered.filter(t => t.type === filter.type);
-            }
-            if (filter.categoryId) {
-                filtered = filtered.filter(t => t.categoryId === filter.categoryId);
-            }
-            if (filter.startDate) {
-                filtered = filtered.filter(t => new Date(t.date) >= filter.startDate!);
-            }
-            if (filter.endDate) {
-                filtered = filtered.filter(t => new Date(t.date) <= filter.endDate!);
-            }
+            if (filter.type) params = params.set('type', filter.type);
+            if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
+            if (filter.startDate) params = params.set('startDate', filter.startDate.toISOString());
+            if (filter.endDate) params = params.set('endDate', filter.endDate.toISOString());
         }
 
-        // Sort by date desc
-        filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-        // Enrich with category data
-        return this.enrichTransactionsWithCategory(filtered);
-    }
-
-    getTransactionById(id: string): Observable<Transaction | undefined> {
-        const transaction = this.transactions.find(t => t.id === id);
-        if (!transaction) return of(undefined);
-
-        return this.enrichTransactionWithCategory(transaction);
-    }
-
-    createTransaction(dto: TransactionDTO): Observable<Transaction> {
-        const newTransaction: Transaction = {
-            id: this.generateId(),
-            ...dto,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        this.transactions.push(newTransaction);
-        this.transactionsSubject.next([...this.transactions]);
-
-        return this.enrichTransactionWithCategory(newTransaction);
-    }
-
-    updateTransaction(id: string, dto: TransactionDTO): Observable<Transaction> {
-        const index = this.transactions.findIndex(t => t.id === id);
-        if (index === -1) return throwError(() => new Error('Transacción no encontrada'));
-
-        const updatedTransaction: Transaction = {
-            ...this.transactions[index],
-            ...dto,
-            updatedAt: new Date()
-        };
-
-        this.transactions[index] = updatedTransaction;
-        this.transactionsSubject.next([...this.transactions]);
-
-        return this.enrichTransactionWithCategory(updatedTransaction);
-    }
-
-    deleteTransaction(id: string): Observable<void> {
-        const index = this.transactions.findIndex(t => t.id === id);
-        if (index === -1) return throwError(() => new Error('Transacción no encontrada'));
-
-        this.transactions.splice(index, 1);
-        this.transactionsSubject.next([...this.transactions]);
-
-        return of(void 0).pipe(delay(200));
+        return this.http.get<Transaction[]>(this.apiUrl, { params }).pipe(
+            tap(transactions => this.transactionsSubject.next(transactions))
+        );
     }
 
     getMonthlySummary(month: number, year: number): Observable<MonthlySummary> {
-        const start = new Date(year, month - 1, 1);
-        const end = new Date(year, month, 0);
-
-        const monthlyTransactions = this.transactions.filter(t => {
-            const d = new Date(t.date);
-            return d >= start && d <= end;
-        });
-
-        const summary: MonthlySummary = {
-            month,
-            year,
-            totalIncome: monthlyTransactions
-                .filter(t => t.type === 'income')
-                .reduce((sum, t) => sum + t.amount, 0),
-            totalExpense: monthlyTransactions
-                .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + t.amount, 0),
-            balance: 0,
-            transactionCount: monthlyTransactions.length
-        };
-
-        summary.balance = summary.totalIncome - summary.totalExpense;
-
-        return of(summary).pipe(delay(200));
+        return this.http.get<MonthlySummary>(`${this.apiUrl}/summary/${month}/${year}`);
     }
 
-    // Helper to join category data
-    private enrichTransactionsWithCategory(transactions: Transaction[]): Observable<Transaction[]> {
-        return this.categoriesService.getCategories().pipe(
-            map(categories => {
-                return transactions.map(t => ({
-                    ...t,
-                    category: categories.find(c => c.id === t.categoryId)
-                }));
-            })
+    getTransactionById(id: string): Observable<Transaction> {
+        return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
+    }
+
+    createTransaction(transaction: TransactionDTO): Observable<Transaction> {
+        return this.http.post<Transaction>(this.apiUrl, transaction).pipe(
+            tap(() => this.refreshTransactions())
         );
     }
 
-    private enrichTransactionWithCategory(transaction: Transaction): Observable<Transaction> {
-        return this.categoriesService.getCategoryById(transaction.categoryId).pipe(
-            map(category => ({
-                ...transaction,
-                category
-            }))
+    updateTransaction(id: string, transaction: TransactionDTO): Observable<Transaction> {
+        return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction).pipe(
+            tap(() => this.refreshTransactions())
         );
     }
 
-    private generateId(): string {
-        return `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    deleteTransaction(id: string): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+            tap(() => this.refreshTransactions())
+        );
+    }
+
+    private refreshTransactions(): void {
+        this.getTransactions().subscribe();
     }
 }
