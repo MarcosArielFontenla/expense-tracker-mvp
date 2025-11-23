@@ -1,1 +1,120 @@
-<p>transaction-form works!</p>
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {{ isEditMode ? 'Editar Transacción' : 'Nueva Transacción' }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+            {{ isEditMode ? 'Modifica los detalles del movimiento' : 'Registra un nuevo ingreso o gasto' }}
+        </p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 animate-slide-in">
+        <p class="text-red-800">{{ error }}</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()"
+        class="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+
+        <!-- Type Toggle -->
+        <div>
+            <label class="label">Tipo de Movimiento</label>
+            <div class="grid grid-cols-2 gap-4">
+                <label
+                    class="relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all"
+                    [class.border-expense-500]="type?.value === 'expense'"
+                    [class.bg-expense-50]="type?.value === 'expense'"
+                    [class.text-expense-700]="type?.value === 'expense'"
+                    [class.border-gray-200]="type?.value !== 'expense'"
+                    [class.hover:bg-gray-50]="type?.value !== 'expense'">
+                    <input type="radio" formControlName="type" value="expense" class="sr-only">
+                    <span class="font-medium">💸 Gasto</span>
+                </label>
+
+                <label
+                    class="relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all"
+                    [class.border-income-500]="type?.value === 'income'" [class.bg-income-50]="type?.value === 'income'"
+                    [class.text-income-700]="type?.value === 'income'"
+                    [class.border-gray-200]="type?.value !== 'income'"
+                    [class.hover:bg-gray-50]="type?.value !== 'income'">
+                    <input type="radio" formControlName="type" value="income" class="sr-only">
+                    <span class="font-medium">💰 Ingreso</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Amount & Date Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Amount -->
+            <div>
+                <label for="amount" class="label">Monto *</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">$</span>
+                    </div>
+                    <input id="amount" type="number" formControlName="amount" class="input-field pl-7"
+                        [class.border-red-500]="amount?.invalid && amount?.touched" placeholder="0.00" step="0.01" />
+                </div>
+                <div *ngIf="amount?.invalid && amount?.touched" class="mt-1 text-sm text-red-600">
+                    <p *ngIf="amount?.errors?.['required']">El monto es obligatorio</p>
+                    <p *ngIf="amount?.errors?.['min']">El monto debe ser mayor a 0</p>
+                </div>
+            </div>
+
+            <!-- Date -->
+            <div>
+                <label for="date" class="label">Fecha *</label>
+                <input id="date" type="date" formControlName="date" class="input-field"
+                    [class.border-red-500]="date?.invalid && date?.touched" />
+                <div *ngIf="date?.invalid && date?.touched" class="mt-1 text-sm text-red-600">
+                    <p *ngIf="date?.errors?.['required']">La fecha es obligatoria</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category -->
+        <div>
+            <label for="categoryId" class="label">Categoría *</label>
+            <select id="categoryId" formControlName="categoryId" class="input-field"
+                [class.border-red-500]="categoryId?.invalid && categoryId?.touched">
+                <option value="" disabled>Selecciona una categoría</option>
+                <option *ngFor="let cat of filteredCategories" [value]="cat.id">
+                    {{ cat.icon }} {{ cat.name }}
+                </option>
+            </select>
+            <div *ngIf="categoryId?.invalid && categoryId?.touched" class="mt-1 text-sm text-red-600">
+                <p *ngIf="categoryId?.errors?.['required']">La categoría es obligatoria</p>
+            </div>
+            <p *ngIf="filteredCategories.length === 0 && type?.value" class="mt-2 text-sm text-yellow-600">
+                ⚠️ No hay categorías de {{ type?.value === 'income' ? 'ingreso' : 'gasto' }}.
+                <a routerLink="/categories/new" class="underline font-medium">Crear una</a>
+            </p>
+        </div>
+
+        <!-- Note -->
+        <div>
+            <label for="note" class="label">Nota (Opcional)</label>
+            <textarea id="note" formControlName="note" rows="3" class="input-field"
+                placeholder="Detalles adicionales..."></textarea>
+            <div *ngIf="note?.invalid && note?.touched" class="mt-1 text-sm text-red-600">
+                <p *ngIf="note?.errors?.['maxlength']">La nota es muy larga (máx 100 caracteres)</p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 pt-4 border-t border-gray-100">
+            <button type="button" (click)="onCancel()" class="btn btn-secondary flex-1" [disabled]="isSubmitting">
+                Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary flex-1" [disabled]="transactionForm.invalid || isSubmitting">
+                <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar Cambios' : 'Registrar' }}</span>
+                <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
+                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Guardando...
+                </span>
+            </button>
+        </div>
+    </form>
+</div>

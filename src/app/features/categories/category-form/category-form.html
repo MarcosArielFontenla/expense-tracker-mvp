@@ -1,1 +1,132 @@
-<p>category-form works!</p>
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {{ isEditMode ? 'Editar Categoría' : 'Nueva Categoría' }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+            {{ isEditMode ? 'Modifica los datos de la categoría' : 'Completa los datos para crear una nueva categoría'
+            }}
+        </p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 animate-slide-in">
+        <p class="text-red-800">{{ error }}</p>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Preview Card -->
+        <div class="card bg-gradient-to-br from-gray-50 to-white border-2 border-dashed border-gray-300">
+            <h3 class="text-sm font-medium text-gray-700 mb-3">Vista Previa</h3>
+            <div class="flex items-center gap-4">
+                <div class="text-5xl w-20 h-20 flex items-center justify-center rounded-xl shadow-lg transition-all"
+                    [style.background-color]="color?.value + '20'">
+                    {{ icon?.value ||'🍔' }}
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-gray-900">
+                        {{ name?.value || 'Nombre de la categoría' }}
+                    </h4>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-1"
+                        [class.bg-income-100]="type?.value === 'income'"
+                        [class.text-income-800]="type?.value === 'income'"
+                        [class.bg-expense-100]="type?.value === 'expense'"
+                        [class.text-expense-800]="type?.value === 'expense'">
+                        {{ type?.value === 'income' ? 'Ingreso' : 'Gasto' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name Field -->
+        <div>
+            <label for="name" class="label">Nombre de la Categoría *</label>
+            <input id="name" type="text" formControlName="name" class="input-field"
+                [class.border-red-500]="name?.invalid && name?.touched"
+                placeholder="ej. Alimentos, Transporte, Salario..." />
+            <div *ngIf="name?.invalid && name?.touched" class="mt-1 text-sm text-red-600">
+                <p *ngIf="name?.errors?.['required']">El nombre es obligatorio</p>
+                <p *ngIf="name?.errors?.['minlength']">El nombre debe tener al menos 2 caracteres</p>
+                <p *ngIf="name?.errors?.['maxlength']">El nombre no puede exceder 50 caracteres</p>
+            </div>
+        </div>
+
+        <!-- Type Field -->
+        <div>
+            <label class="label">Tipo de Categoría *</label>
+            <div class="grid grid-cols-2 gap-4">
+                <label
+                    class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all"
+                    [class.border-expense-500]="type?.value === 'expense'"
+                    [class.bg-expense-50]="type?.value === 'expense'"
+                    [class.border-gray-300]="type?.value !== 'expense'"
+                    [class.hover:border-expense-400]="type?.value !== 'expense'">
+                    <input type="radio" formControlName="type" value="expense" class="sr-only" />
+                    <div class="text-center">
+                        <div class="text-3xl mb-1">💸</div>
+                        <div class="font-medium text-gray-900">Gasto</div>
+                    </div>
+                </label>
+
+                <label
+                    class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all"
+                    [class.border-income-500]="type?.value === 'income'" [class.bg-income-50]="type?.value === 'income'"
+                    [class.border-gray-300]="type?.value !== 'income'"
+                    [class.hover:border-income-400]="type?.value !== 'income'">
+                    <input type="radio" formControlName="type" value="income" class="sr-only" />
+                    <div class="text-center">
+                        <div class="text-3xl mb-1">💰</div>
+                        <div class="font-medium text-gray-900">Ingreso</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Icon Selector -->
+        <div>
+            <label class="label">Ícono *</label>
+            <div class="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2">
+                <button *ngFor="let availableIcon of availableIcons" type="button" (click)="selectIcon(availableIcon)"
+                    class="aspect-square flex items-center justify-center text-2xl rounded-lg border-2 transition-all hover:scale-110"
+                    [class.border-primary-500]="icon?.value === availableIcon"
+                    [class.bg-primary-50]="icon?.value === availableIcon"
+                    [class.border-gray-200]="icon?.value !== availableIcon"
+                    [class.hover:border-primary-300]="icon?.value !== availableIcon">
+                    {{ availableIcon }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Color Selector -->
+        <div>
+            <label class="label">Color *</label>
+            <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-3">
+                <button *ngFor="let availableColor of availableColors" type="button"
+                    (click)="selectColor(availableColor)"
+                    class="aspect-square rounded-lg border-4 transition-all hover:scale-110"
+                    [class.border-gray-800]="color?.value === availableColor"
+                    [class.border-transparent]="color?.value !== availableColor"
+                    [style.background-color]="availableColor" [title]="availableColor"></button>
+            </div>
+            <p class="mt-2 text-sm text-gray-600">
+                Color seleccionado: <span class="font-mono font-medium">{{ color?.value }}</span>
+            </p>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex gap-4 pt-6 border-t border-gray-200">
+            <button type="button" (click)="onCancel()" class="btn btn-secondary flex-1" [disabled]="isSubmitting">
+                Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary flex-1" [disabled]="categoryForm.invalid || isSubmitting">
+                <span *ngIf="!isSubmitting">{{ isEditMode ? 'Guardar Cambios' : 'Crear Categoría' }}</span>
+                <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
+                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Guardando...
+                </span>
+            </button>
+        </div>
+    </form>
+</div>
