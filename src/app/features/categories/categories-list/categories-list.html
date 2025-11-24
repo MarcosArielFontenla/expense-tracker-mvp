@@ -7,17 +7,14 @@
         Gestiona las categorías de tus transacciones
       </p>
     </div>
-    <button
-      (click)="onCreateCategory()"
-      class="btn btn-primary flex items-center gap-2"
-    >
+    <button (click)="onCreateCategory()" class="btn btn-primary flex items-center gap-2">
       <span class="text-xl">+</span>
       Nueva Categoría
     </button>
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
     <div class="card bg-gradient-to-br from-green-50 to-white border border-green-200">
       <div class="flex items-center justify-between">
         <div>
@@ -52,34 +49,22 @@
   <!-- Filter Tabs -->
   <div class="mb-6">
     <div class="flex gap-2 border-b border-gray-200">
-      <button
-        (click)="setFilter('all')"
-        [class.border-primary-600]="filterType === 'all'"
-        [class.text-primary-600]="filterType === 'all'"
-        [class.border-transparent]="filterType !== 'all'"
+      <button (click)="setFilter('all')" [class.border-primary-600]="filterType === 'all'"
+        [class.text-primary-600]="filterType === 'all'" [class.border-transparent]="filterType !== 'all'"
         [class.text-gray-600]="filterType !== 'all'"
-        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-primary-600"
-      >
+        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-primary-600">
         Todas ({{ categories.length }})
       </button>
-      <button
-        (click)="setFilter('expense')"
-        [class.border-expense-600]="filterType === 'expense'"
-        [class.text-expense-600]="filterType === 'expense'"
-        [class.border-transparent]="filterType !== 'expense'"
+      <button (click)="setFilter('expense')" [class.border-expense-600]="filterType === 'expense'"
+        [class.text-expense-600]="filterType === 'expense'" [class.border-transparent]="filterType !== 'expense'"
         [class.text-gray-600]="filterType !== 'expense'"
-        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-expense-600"
-      >
+        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-expense-600">
         Gastos ({{ getCategoryCount('expense') }})
       </button>
-      <button
-        (click)="setFilter('income')"
-        [class.border-income-600]="filterType === 'income'"
-        [class.text-income-600]="filterType === 'income'"
-        [class.border-transparent]="filterType !== 'income'"
+      <button (click)="setFilter('income')" [class.border-income-600]="filterType === 'income'"
+        [class.text-income-600]="filterType === 'income'" [class.border-transparent]="filterType !== 'income'"
         [class.text-gray-600]="filterType !== 'income'"
-        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-income-600"
-      >
+        class="px-4 py-2 border-b-2 font-medium transition-colors hover:text-income-600">
         Ingresos ({{ getCategoryCount('income') }})
       </button>
     </div>
@@ -100,32 +85,25 @@
   </div>
 
   <!-- Categories Grid -->
-  <div *ngIf="!isLoading && filteredCategories.length > 0" 
-       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in">
-    <div
-      *ngFor="let category of filteredCategories"
+  <div *ngIf="!isLoading && filteredCategories.length > 0"
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in">
+    <div *ngFor="let category of filteredCategories"
       class="card hover:shadow-lg transition-all duration-200 cursor-pointer group"
-      [class.border-income-300]="category.type === 'income'"
-      [class.border-expense-300]="category.type === 'expense'"
-    >
+      [class.border-income-300]="category.type === 'income'" [class.border-expense-300]="category.type === 'expense'">
       <!-- Category Header -->
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-center gap-3">
           <div
             class="text-4xl w-16 h-16 flex items-center justify-center rounded-xl transition-transform group-hover:scale-110"
-            [style.background-color]="category.color + '20'"
-          >
+            [style.background-color]="category.color + '20'">
             {{ category.icon }}
           </div>
           <div>
             <h3 class="font-semibold text-gray-900">{{ category.name }}</h3>
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-              [class.bg-income-100]="category.type === 'income'"
-              [class.text-income-800]="category.type === 'income'"
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+              [class.bg-income-100]="category.type === 'income'" [class.text-income-800]="category.type === 'income'"
               [class.bg-expense-100]="category.type === 'expense'"
-              [class.text-expense-800]="category.type === 'expense'"
-            >
+              [class.text-expense-800]="category.type === 'expense'">
               {{ category.type === 'income' ? 'Ingreso' : 'Gasto' }}
             </span>
           </div>
@@ -134,25 +112,19 @@
 
       <!-- Color Badge -->
       <div class="flex items-center gap-2 mb-4">
-        <div
-          class="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-          [style.background-color]="category.color"
-        ></div>
+        <div class="w-8 h-8 rounded-full border-2 border-white shadow-sm" [style.background-color]="category.color">
+        </div>
         <span class="text-xs text-gray-500 font-mono">{{ category.color }}</span>
       </div>
 
       <!-- Actions -->
       <div class="flex gap-2 pt-3 border-t border-gray-100">
-        <button
-          (click)="onEditCategory(category)"
-          class="flex-1 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 rounded hover:bg-primary-100 transition-colors"
-        >
+        <button (click)="onEditCategory(category)"
+          class="flex-1 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 rounded hover:bg-primary-100 transition-colors">
           Editar
         </button>
-        <button
-          (click)="onDeleteCategory(category)"
-          class="flex-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors"
-        >
+        <button (click)="onDeleteCategory(category)"
+          class="flex-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors">
           Eliminar
         </button>
       </div>
@@ -160,20 +132,15 @@
   </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && filteredCategories.length === 0 && !error" 
-       class="text-center py-12 animate-fade-in">
+  <div *ngIf="!isLoading && filteredCategories.length === 0 && !error" class="text-center py-12 animate-fade-in">
     <div class="text-6xl mb-4">📂</div>
     <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay categorías</h3>
     <p class="text-gray-600 mb-6">
-      {{ filterType === 'all' 
-        ? 'Comienza creando tu primera categoría' 
-        : 'No hay categorías de este tipo' }}
+      {{ filterType === 'all'
+      ? 'Comienza creando tu primera categoría'
+      : 'No hay categorías de este tipo' }}
     </p>
-    <button
-      *ngIf="filterType === 'all'"
-      (click)="onCreateCategory()"
-      class="btn btn-primary"
-    >
+    <button *ngIf="filterType === 'all'" (click)="onCreateCategory()" class="btn btn-primary">
       Crear Primera Categoría
     </button>
   </div>

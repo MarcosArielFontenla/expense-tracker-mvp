@@ -118,6 +118,11 @@
   .bg-expense-light {
     @apply bg-expense-50;
   }
+
+  /* Touch-friendly sizes for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
 }
 
 /* Animations */
@@ -149,4 +154,34 @@
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in;
+}
+
+/* Responsive Typography & Spacing */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  .btn {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .card {
+    @apply p-4;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
 }

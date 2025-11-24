@@ -1,0 +1,28 @@
+/* Transactions list table responsive styles */
+
+/* Hide 'Nota' column on tablets and small laptops to prevent overlap */
+@media (min-width: 768px) and (max-width: 1279px) {
+
+    /* Hide the Nota column header and cells */
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        display: none;
+    }
+
+    /* Adjust table layout for better spacing */
+    table {
+        table-layout: auto;
+    }
+
+    /* Ensure action buttons have enough space */
+    table td:last-child {
+        min-width: 140px;
+    }
+}
+
+/* For very large screens, ensure table doesn't get too stretched */
+@media (min-width: 1440px) {
+    table {
+        table-layout: fixed;
+    }
+}
