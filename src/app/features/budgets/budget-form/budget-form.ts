@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BudgetService } from '../services/budget.service';
@@ -43,7 +43,8 @@ export class BudgetForm implements OnInit {
         private budgetService: BudgetService,
         private categoriesService: CategoriesService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) {
         const today = new Date();
         const currentYear = today.getFullYear();
@@ -54,8 +55,10 @@ export class BudgetForm implements OnInit {
 
     ngOnInit(): void {
         this.initializeForm();
-        this.loadCategories();
-        this.checkEditMode();
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadCategories();
+            this.checkEditMode();
+        }
     }
 
     initializeForm(): void {
