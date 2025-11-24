@@ -591,3 +591,40 @@
     }
   }
 }
+
+/* Tablet specific responsive (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .filter-group {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .report-type-selector {
+    flex-wrap: wrap;
+  }
+
+  .tab-button {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
+/* Small Laptop specific responsive (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .filter-group {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .filters-panel {
+    padding: 1.25rem;
+  }
+}
+
+/* Large screens (1280px+) */
+@media (min-width: 1280px) {
+  .filter-group {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
