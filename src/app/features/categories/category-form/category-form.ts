@@ -37,15 +37,14 @@ export class CategoryForm implements OnInit {
     private fb: FormBuilder,
     private categoriesService: CategoriesService,
     private router: Router,
-    private route: ActivatedRoute
-  ) { }
+    private route: ActivatedRoute) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.initializeForm();
     this.checkEditMode();
   }
 
-  initializeForm(): void {
+  public initializeForm(): void {
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
       icon: ['🍔', Validators.required],
@@ -54,7 +53,7 @@ export class CategoryForm implements OnInit {
     });
   }
 
-  checkEditMode(): void {
+  public checkEditMode(): void {
     this.categoryId = this.route.snapshot.paramMap.get('id');
 
     if (this.categoryId) {
@@ -63,7 +62,7 @@ export class CategoryForm implements OnInit {
     }
   }
 
-  loadCategory(id: string): void {
+  public loadCategory(id: string): void {
     this.categoriesService.getCategoryById(id).subscribe({
       next: (category) => {
         if (category) {
@@ -84,15 +83,15 @@ export class CategoryForm implements OnInit {
     });
   }
 
-  selectIcon(icon: string): void {
+  public selectIcon(icon: string): void {
     this.categoryForm.patchValue({ icon });
   }
 
-  selectColor(color: string): void {
+  public selectColor(color: string): void {
     this.categoryForm.patchValue({ color });
   }
 
-  onSubmit(): void {
+  public onSubmit(): void {
     if (this.categoryForm.invalid) {
       this.categoryForm.markAllAsTouched();
       return;
@@ -118,13 +117,24 @@ export class CategoryForm implements OnInit {
     });
   }
 
-  onCancel(): void {
+  public onCancel(): void {
     this.router.navigate(['/categories']);
   }
 
   // Getters for form controls
-  get name() { return this.categoryForm.get('name'); }
-  get icon() { return this.categoryForm.get('icon'); }
-  get color() { return this.categoryForm.get('color'); }
-  get type() { return this.categoryForm.get('type'); }
+  public get name() {
+    return this.categoryForm.get('name');
+  }
+
+  public get icon() {
+    return this.categoryForm.get('icon');
+  }
+
+  public get color() {
+    return this.categoryForm.get('color');
+  }
+
+  public get type() {
+    return this.categoryForm.get('type');
+  }
 }

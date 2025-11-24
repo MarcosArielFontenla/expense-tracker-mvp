@@ -28,25 +28,22 @@ export class Dashboard implements OnInit, AfterViewInit {
   constructor(
     private transactionsService: TransactionsService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+    @Inject(PLATFORM_ID) private platformId: Object) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadDashboardData();
 
-      // Refresh when transactions change
       this.transactionsService.refresh$.subscribe(() => {
         this.loadDashboardData();
       });
     }
   }
 
-  ngAfterViewInit(): void {
-    // Charts will be initialized after data loads
+  public ngAfterViewInit(): void {
   }
 
-  loadDashboardData(): void {
+  public loadDashboardData(): void {
     this.isLoading = true;
     const today = new Date();
     const currentMonth = today.getMonth() + 1;
@@ -70,7 +67,7 @@ export class Dashboard implements OnInit, AfterViewInit {
     });
   }
 
-  updateBreakdownChart(transactions: Transaction[]): void {
+  public updateBreakdownChart(transactions: Transaction[]): void {
     if (!this.breakdownChartRef) return;
 
     const expenses = transactions.filter(t => t.type === 'expense');
@@ -81,6 +78,7 @@ export class Dashboard implements OnInit, AfterViewInit {
       const catName = t.category?.name || 'Otros';
       const current = categoryTotals.get(catName) || 0;
       categoryTotals.set(catName, current + t.amount);
+
       if (t.category?.color) {
         categoryColors.set(catName, t.category.color);
       }
@@ -121,10 +119,9 @@ export class Dashboard implements OnInit, AfterViewInit {
     this.breakdownChart = new Chart(this.breakdownChartRef.nativeElement, config);
   }
 
-  updateTrendChart(transactions: Transaction[]): void {
+  public updateTrendChart(transactions: Transaction[]): void {
     if (!this.trendChartRef) return;
 
-    // Group by day for the last 7 days
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -184,11 +181,11 @@ export class Dashboard implements OnInit, AfterViewInit {
     this.trendChart = new Chart(this.trendChartRef.nativeElement, config);
   }
 
-  onNewTransaction(): void {
+  public onNewTransaction(): void {
     this.router.navigate(['/transactions/new']);
   }
 
-  onViewAllTransactions(): void {
+  public onViewAllTransactions(): void {
     this.router.navigate(['/transactions']);
   }
 }

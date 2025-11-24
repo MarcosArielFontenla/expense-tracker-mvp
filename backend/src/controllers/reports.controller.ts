@@ -4,9 +4,10 @@ import { Transaction } from '../entities/Transaction';
 import { AuthRequest } from '../middlewares/auth';
 
 export class ReportsController {
+
     private transactionRepository = AppDataSource.getRepository(Transaction);
 
-    async getMonthlyExpensesByCategory(req: AuthRequest, res: Response) {
+    public async getMonthlyExpensesByCategory(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
             const { month, year } = req.query;
@@ -39,7 +40,7 @@ export class ReportsController {
         }
     }
 
-    async getMonthlyIncomeByCategory(req: AuthRequest, res: Response) {
+    public async getMonthlyIncomeByCategory(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
             const { month, year } = req.query;
@@ -72,7 +73,7 @@ export class ReportsController {
         }
     }
 
-    async getCashFlow(req: AuthRequest, res: Response) {
+    public async getCashFlow(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
 
@@ -100,7 +101,7 @@ export class ReportsController {
         }
     }
 
-    async getCustomRangeReport(req: AuthRequest, res: Response) {
+    public async getCustomRangeReport(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
             const { startDate, endDate, categoryId, type } = req.query;
@@ -147,7 +148,7 @@ export class ReportsController {
         }
     }
 
-    async getDetailedMonthlyReport(req: AuthRequest, res: Response) {
+    public async getDetailedMonthlyReport(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
             const { month, year } = req.query;
@@ -207,7 +208,7 @@ export class ReportsController {
         }
     }
 
-    async getCategoryDetailedReport(req: AuthRequest, res: Response) {
+    public async getCategoryDetailedReport(req: AuthRequest, res: Response) {
         try {
             const userId = req.userId;
             const { categoryId, startDate, endDate } = req.query;
