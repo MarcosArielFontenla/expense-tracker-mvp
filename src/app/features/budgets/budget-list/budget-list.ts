@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BudgetService } from '../services/budget.service';
 import { CategoriesService } from '../../categories/services/categories.service';
@@ -41,8 +41,7 @@ export class BudgetList implements OnInit {
     constructor(
         private budgetService: BudgetService,
         private categoriesService: CategoriesService,
-        private router: Router
-    ) {
+        @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         this.selectedMonth = today.getMonth() + 1;
         this.selectedYear = today.getFullYear();
@@ -54,7 +53,9 @@ export class BudgetList implements OnInit {
     }
 
     ngOnInit(): void {
-        this.loadCategories();
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadCategories();
+        }
     }
 
     loadCategories(): void {

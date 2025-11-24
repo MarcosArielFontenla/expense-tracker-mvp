@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Category } from '../../../core/models/category.model';
 import { environment } from '../../../environments/environment.development';
@@ -13,8 +14,13 @@ export class CategoriesService {
 
     private apiUrl = `${environment.apiUrl}/categories`;
 
-    constructor(private http: HttpClient) {
-        this.loadCategories();
+    constructor(
+        private http: HttpClient,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadCategories();
+        }
     }
 
     private loadCategories(): void {
