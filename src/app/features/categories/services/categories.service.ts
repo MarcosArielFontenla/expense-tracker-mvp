@@ -14,10 +14,7 @@ export class CategoriesService {
 
     private apiUrl = `${environment.apiUrl}/categories`;
 
-    constructor(
-        private http: HttpClient,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) {
+    constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {
         if (isPlatformBrowser(this.platformId)) {
             this.loadCategories();
         }
@@ -30,31 +27,31 @@ export class CategoriesService {
         });
     }
 
-    getCategories(): Observable<Category[]> {
+    public getCategories(): Observable<Category[]> {
         return this.http.get<Category[]>(this.apiUrl);
     }
 
-    getCategoryById(id: string): Observable<Category> {
+    public getCategoryById(id: string): Observable<Category> {
         return this.http.get<Category>(`${this.apiUrl}/${id}`);
     }
 
-    getCategoriesByType(type: 'income' | 'expense'): Observable<Category[]> {
+    public getCategoriesByType(type: 'income' | 'expense'): Observable<Category[]> {
         return this.http.get<Category[]>(`${this.apiUrl}?type=${type}`);
     }
 
-    createCategory(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Observable<Category> {
+    public createCategory(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Observable<Category> {
         return this.http.post<Category>(this.apiUrl, category).pipe(
             tap(() => this.loadCategories())
         );
     }
 
-    updateCategory(id: string, category: Partial<Category>): Observable<Category> {
+    public updateCategory(id: string, category: Partial<Category>): Observable<Category> {
         return this.http.put<Category>(`${this.apiUrl}/${id}`, category).pipe(
             tap(() => this.loadCategories())
         );
     }
 
-    deleteCategory(id: string): Observable<void> {
+    public deleteCategory(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             tap(() => this.loadCategories())
         );

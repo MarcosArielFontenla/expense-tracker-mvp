@@ -4,26 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment.development';
-
-interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-interface RegisterRequest {
-    name: string;
-    email: string;
-    password: string;
-}
-
-interface AuthResponse {
-    token: string;
-    user: {
-        id: string;
-        name: string;
-        email: string;
-    };
-}
+import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
 
 @Injectable({
     providedIn: 'root'
@@ -54,16 +35,12 @@ export class AuthService {
 
     public register(data: RegisterRequest): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, data)
-            .pipe(
-                tap(response => this.handleAuthResponse(response))
-            );
+            .pipe(tap(response => this.handleAuthResponse(response)));
     }
 
     public login(data: LoginRequest): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, data)
-            .pipe(
-                tap(response => this.handleAuthResponse(response))
-            );
+            .pipe(tap(response => this.handleAuthResponse(response)));
     }
 
     public logout(): void {

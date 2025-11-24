@@ -29,15 +29,14 @@ export class TransactionForm implements OnInit {
     private transactionsService: TransactionsService,
     private categoriesService: CategoriesService,
     private router: Router,
-    private route: ActivatedRoute
-  ) { }
+    private route: ActivatedRoute) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.initializeForm();
     this.loadCategories();
   }
 
-  initializeForm(): void {
+  public initializeForm(): void {
     const today = new Date().toISOString().substring(0, 10);
 
     this.transactionForm = this.fb.group({
@@ -56,7 +55,7 @@ export class TransactionForm implements OnInit {
     });
   }
 
-  loadCategories(): void {
+  public loadCategories(): void {
     this.categoriesService.getCategories().subscribe({
       next: (cats) => {
         this.categories = cats;
@@ -67,11 +66,11 @@ export class TransactionForm implements OnInit {
     });
   }
 
-  filterCategories(type: 'expense' | 'income'): void {
+  public filterCategories(type: 'expense' | 'income'): void {
     this.filteredCategories = this.categories.filter(c => c.type === type);
   }
 
-  checkEditMode(): void {
+  public checkEditMode(): void {
     this.transactionId = this.route.snapshot.paramMap.get('id');
 
     if (this.transactionId) {
@@ -79,7 +78,6 @@ export class TransactionForm implements OnInit {
       this.transactionsService.getTransactionById(this.transactionId).subscribe({
         next: (transaction) => {
           if (transaction) {
-            // Format date for input[type="date"]
             const dateStr = new Date(transaction.date).toISOString().substring(0, 10);
 
             this.transactionForm.patchValue({
@@ -90,7 +88,6 @@ export class TransactionForm implements OnInit {
               note: transaction.note
             });
 
-            // Ensure categories are filtered correctly for the loaded transaction type
             this.filterCategories(transaction.type);
           } else {
             this.error = 'Transacción no encontrada';
@@ -104,7 +101,7 @@ export class TransactionForm implements OnInit {
     }
   }
 
-  onSubmit(): void {
+  public onSubmit(): void {
     if (this.transactionForm.invalid) {
       this.transactionForm.markAllAsTouched();
       return;
@@ -137,14 +134,28 @@ export class TransactionForm implements OnInit {
     });
   }
 
-  onCancel(): void {
+  public onCancel(): void {
     this.router.navigate(['/transactions']);
   }
 
   // Getters
-  get type() { return this.transactionForm.get('type'); }
-  get amount() { return this.transactionForm.get('amount'); }
-  get categoryId() { return this.transactionForm.get('categoryId'); }
-  get date() { return this.transactionForm.get('date'); }
-  get note() { return this.transactionForm.get('note'); }
+  public get type() {
+    return this.transactionForm.get('type');
+  }
+
+  public get amount() {
+    return this.transactionForm.get('amount');
+  }
+
+  public get categoryId() {
+    return this.transactionForm.get('categoryId');
+  }
+
+  public get date() {
+    return this.transactionForm.get('date');
+  }
+
+  public get note() {
+    return this.transactionForm.get('note');
+  }
 }

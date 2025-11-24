@@ -15,7 +15,7 @@ export class TransactionsService {
 
     constructor(private http: HttpClient) { }
 
-    getTransactions(filter?: TransactionFilter): Observable<Transaction[]> {
+    public getTransactions(filter?: TransactionFilter): Observable<Transaction[]> {
         let params = new HttpParams();
 
         if (filter) {
@@ -28,27 +28,27 @@ export class TransactionsService {
         return this.http.get<Transaction[]>(this.apiUrl, { params });
     }
 
-    getMonthlySummary(month: number, year: number): Observable<MonthlySummary> {
+    public getMonthlySummary(month: number, year: number): Observable<MonthlySummary> {
         return this.http.get<MonthlySummary>(`${this.apiUrl}/summary/${month}/${year}`);
     }
 
-    getTransactionById(id: string): Observable<Transaction> {
+    public getTransactionById(id: string): Observable<Transaction> {
         return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
     }
 
-    createTransaction(transaction: TransactionDTO): Observable<Transaction> {
+    public createTransaction(transaction: TransactionDTO): Observable<Transaction> {
         return this.http.post<Transaction>(this.apiUrl, transaction).pipe(
             tap(() => this.refreshTransactions())
         );
     }
 
-    updateTransaction(id: string, transaction: TransactionDTO): Observable<Transaction> {
+    public updateTransaction(id: string, transaction: TransactionDTO): Observable<Transaction> {
         return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction).pipe(
             tap(() => this.refreshTransactions())
         );
     }
 
-    deleteTransaction(id: string): Observable<void> {
+    public deleteTransaction(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             tap(() => this.refreshTransactions())
         );

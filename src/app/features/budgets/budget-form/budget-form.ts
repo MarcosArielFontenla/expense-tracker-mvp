@@ -36,6 +36,7 @@ export class BudgetForm implements OnInit {
         { value: 11, label: 'Noviembre' },
         { value: 12, label: 'Diciembre' }
     ];
+
     years: number[] = [];
 
     constructor(
@@ -44,24 +45,25 @@ export class BudgetForm implements OnInit {
         private categoriesService: CategoriesService,
         private router: Router,
         private route: ActivatedRoute,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) {
+        @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         const currentYear = today.getFullYear();
+
         for (let i = 0; i < 5; i++) {
             this.years.push(currentYear - i);
         }
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         this.initializeForm();
+
         if (isPlatformBrowser(this.platformId)) {
             this.loadCategories();
             this.checkEditMode();
         }
     }
 
-    initializeForm(): void {
+    public initializeForm(): void {
         const today = new Date();
 
         this.budgetForm = this.fb.group({
@@ -73,14 +75,14 @@ export class BudgetForm implements OnInit {
         });
     }
 
-    loadCategories(): void {
+    public loadCategories(): void {
         this.categoriesService.getCategoriesByType('expense').subscribe({
             next: (cats) => this.categories = cats,
             error: (err) => console.error('Error loading categories', err)
         });
     }
 
-    checkEditMode(): void {
+    public checkEditMode(): void {
         this.budgetId = this.route.snapshot.paramMap.get('id');
 
         if (this.budgetId) {
@@ -95,8 +97,6 @@ export class BudgetForm implements OnInit {
                             year: budget.year,
                             alertThreshold: budget.alertThreshold
                         });
-                        // Disable fields that shouldn't change in edit (optional, but good practice for composite keys)
-                        // For now we allow changing everything but ID
                     } else {
                         this.error = 'Presupuesto no encontrado';
                     }
@@ -109,7 +109,7 @@ export class BudgetForm implements OnInit {
         }
     }
 
-    onSubmit(): void {
+    public onSubmit(): void {
         if (this.budgetForm.invalid) {
             this.budgetForm.markAllAsTouched();
             return;
@@ -142,14 +142,28 @@ export class BudgetForm implements OnInit {
         });
     }
 
-    onCancel(): void {
+    public onCancel(): void {
         this.router.navigate(['/budgets']);
     }
 
     // Getters
-    get categoryId() { return this.budgetForm.get('categoryId'); }
-    get amount() { return this.budgetForm.get('amount'); }
-    get month() { return this.budgetForm.get('month'); }
-    get year() { return this.budgetForm.get('year'); }
-    get alertThreshold() { return this.budgetForm.get('alertThreshold'); }
+    public get categoryId() {
+        return this.budgetForm.get('categoryId');
+    }
+
+    public get amount() {
+        return this.budgetForm.get('amount');
+    }
+
+    public get month() {
+        return this.budgetForm.get('month');
+    }
+
+    public get year() {
+        return this.budgetForm.get('year');
+    }
+
+    public get alertThreshold() {
+        return this.budgetForm.get('alertThreshold');
+    }
 }
