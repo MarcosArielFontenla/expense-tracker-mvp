@@ -6,6 +6,7 @@ import { TransactionsList } from './features/transactions/transactions-list/tran
 import { TransactionForm } from './features/transactions/transaction-form/transaction-form';
 import { BudgetList } from './features/budgets/budget-list/budget-list';
 import { BudgetForm } from './features/budgets/budget-form/budget-form';
+import { Reports } from './features/reports/reports';
 import { Layout } from './core/layout/layout';
 import { NotFound } from './core/pages/not-found/not-found';
 import { Login } from './features/auth/login/login';
@@ -80,6 +81,12 @@ export const routes: Routes = [
             {
                 path: 'budgets/edit/:id',
                 component: BudgetForm
+            },
+
+            // Reports route
+            {
+                path: 'reports',
+                component: Reports
             },
 
             // 404 Wildcard
