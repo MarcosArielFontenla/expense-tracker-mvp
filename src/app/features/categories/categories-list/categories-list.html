@@ -86,7 +86,7 @@
 
   <!-- Categories Grid -->
   <div *ngIf="!isLoading && filteredCategories.length > 0"
-    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in">
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in">
     <div *ngFor="let category of filteredCategories"
       class="card hover:shadow-lg transition-all duration-200 cursor-pointer group"
       [class.border-income-300]="category.type === 'income'" [class.border-expense-300]="category.type === 'expense'">
