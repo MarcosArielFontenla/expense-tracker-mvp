@@ -12,10 +12,11 @@ import { AuthService } from '../../services/auth.service';
 })
 export class Sidebar {
     menuItems = [
-        { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-        { path: '/transactions', label: 'Transacciones', icon: '💸' },
-        { path: '/categories', label: 'Categorías', icon: '🏷️' },
-        { path: '/budgets', label: 'Presupuestos', icon: '💰' }
+        { icon: '📊', label: 'Dashboard', path: '/dashboard' },
+        { icon: '💸', label: 'Transacciones', path: '/transactions' },
+        { icon: '🏷️', label: 'Categorías', path: '/categories' },
+        { icon: '💰', label: 'Presupuestos', path: '/budgets' },
+        { icon: '📈', label: 'Reportes', path: '/reports' }
     ];
 
     private authService = inject(AuthService);

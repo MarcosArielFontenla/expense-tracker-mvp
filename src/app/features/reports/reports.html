@@ -1,1 +1,167 @@
-<p>reports works!</p>
+<div class="reports-container">
+    <!-- Header -->
+    <header class="reports-header">
+        <h1>Reportes Financieros</h1>
+    </header>
+
+    <!-- Report Type Selector -->
+    <div class="report-type-selector">
+        <button [class.active]="reportType === 'monthly'" (click)="reportType = 'monthly'; onReportTypeChange()"
+            class="tab-button">
+            📅 Reporte Mensual
+        </button>
+        <button [class.active]="reportType === 'custom'" (click)="reportType = 'custom'; onReportTypeChange()"
+            class="tab-button">
+            📊 Rango Personalizado
+        </button>
+        <button [class.active]="reportType === 'category'" (click)="reportType = 'category'; onReportTypeChange()"
+            class="tab-button">
+            🏷️ Por Categoría
+        </button>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="filters-panel">
+        <!-- Monthly Report Filters -->
+        <div *ngIf="reportType === 'monthly'" class="filter-group">
+            <label>Mes:</label>
+            <select [(ngModel)]="selectedMonth" (change)="onFilterChange()" class="filter-input">
+                <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
+            </select>
+
+            <label>Año:</label>
+            <select [(ngModel)]="selectedYear" (change)="onFilterChange()" class="filter-input">
+                <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+            </select>
+        </div>
+
+        <!-- Custom Range Filters -->
+        <div *ngIf="reportType === 'custom'" class="filter-group">
+            <label>Fecha Inicio:</label>
+            <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="filter-input">
+
+            <label>Fecha Fin:</label>
+            <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="filter-input">
+
+            <label>Categoría:</label>
+            <select [(ngModel)]="selectedCategory" (change)="onFilterChange()" class="filter-input">
+                <option value="">Todas</option>
+                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+
+            <label>Tipo:</label>
+            <select [(ngModel)]="selectedType" (change)="onFilterChange()" class="filter-input">
+                <option value="all">Todos</option>
+                <option value="income">Ingresos</option>
+                <option value="expense">Gastos</option>
+            </select>
+        </div>
+
+        <!-- Category Report Filters -->
+        <div *ngIf="reportType === 'category'" class="filter-group">
+            <label>Categoría:</label>
+            <select [(ngModel)]="selectedCategory" (change)="onFilterChange()" class="filter-input" required>
+                <option value="">Selecciona una categoría</option>
+                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+
+            <label>Desde (opcional):</label>
+            <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="filter-input">
+
+            <label>Hasta (opcional):</label>
+            <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="filter-input">
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card income">
+            <div class="card-icon">💰</div>
+            <div class="card-content">
+                <h3>Total Ingresos</h3>
+                <p class="amount">{{ totalIncome | currency }}</p>
+            </div>
+        </div>
+
+        <div class="summary-card expense">
+            <div class="card-icon">💸</div>
+            <div class="card-content">
+                <h3>Total Gastos</h3>
+                <p class="amount">{{ totalExpenses | currency }}</p>
+            </div>
+        </div>
+
+        <div class="summary-card balance" [class.positive]="balance > 0" [class.negative]="balance < 0">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+                <h3>Balance</h3>
+                <p class="amount">{{ balance | currency }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div *ngIf="!isLoading && transactions.length > 0" class="export-actions">
+        <button (click)="exportToCSV()" class="export-btn csv-btn">
+            📊 Exportar CSV
+        </button>
+        <button (click)="exportToPDF()" class="export-btn pdf-btn">
+            📄 Exportar PDF
+        </button>
+        <button (click)="printReport()" class="export-btn print-btn">
+            🖨️ Imprimir
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando reporte...</p>
+    </div>
+
+    <!-- Transactions Table -->
+    <div *ngIf="!isLoading && transactions.length > 0" class="transactions-section">
+        <h2>Transacciones ({{ transactions.length }})</h2>
+
+        <div class="table-container">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th class="text-right">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let transaction of transactions">
+                        <td>{{ transaction.date | date:'dd/MM/yyyy' }}</td>
+                        <td>
+                            <span class="category-badge"
+                                [style.background-color]="getCategoryColor(transaction.categoryId)">
+                                {{ getCategoryName(transaction.categoryId) }}
+                            </span>
+                        </td>
+                        <td>{{ transaction.note || '-' }}</td>
+                        <td>
+                            <span [class]="getTransactionTypeClass(transaction.type)">
+                                {{ getTransactionTypeLabel(transaction.type) }}
+                            </span>
+                        </td>
+                        <td class="text-right" [class]="getTransactionTypeClass(transaction.type)">
+                            {{ transaction.type === 'income' ? '+' : '-' }}{{ transaction.amount | currency }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && transactions.length === 0" class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>No hay transacciones</h3>
+        <p>No se encontraron transacciones para los filtros seleccionados.</p>
+    </div>
+</div>
