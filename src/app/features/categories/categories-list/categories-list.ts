@@ -21,10 +21,11 @@ export class CategoriesList implements OnInit {
   constructor(
     private categoriesService: CategoriesService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+    @Inject(PLATFORM_ID) private platformId: Object) {
 
-  ngOnInit(): void {
+  }
+
+  public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadCategories();
 
@@ -36,7 +37,7 @@ export class CategoriesList implements OnInit {
     }
   }
 
-  loadCategories(): void {
+  public loadCategories(): void {
     this.isLoading = true;
     this.error = null;
 
@@ -54,7 +55,7 @@ export class CategoriesList implements OnInit {
     });
   }
 
-  applyFilter(): void {
+  public applyFilter(): void {
     if (this.filterType === 'all') {
       this.filteredCategories = this.categories;
     } else {
@@ -62,24 +63,23 @@ export class CategoriesList implements OnInit {
     }
   }
 
-  setFilter(type: 'all' | 'expense' | 'income'): void {
+  public setFilter(type: 'all' | 'expense' | 'income'): void {
     this.filterType = type;
     this.applyFilter();
   }
 
-  onCreateCategory(): void {
+  public onCreateCategory(): void {
     this.router.navigate(['/categories/new']);
   }
 
-  onEditCategory(category: Category): void {
+  public onEditCategory(category: Category): void {
     this.router.navigate(['/categories/edit', category.id]);
   }
 
-  onDeleteCategory(category: Category): void {
+  public onDeleteCategory(category: Category): void {
     if (confirm(`¿Estás seguro de eliminar la categoría "${category.name}"?`)) {
       this.categoriesService.deleteCategory(category.id).subscribe({
         next: () => {
-          // Category list will update automatically via subscription
         },
         error: (err) => {
           this.error = 'Error al eliminar la categoría';
@@ -89,7 +89,7 @@ export class CategoriesList implements OnInit {
     }
   }
 
-  getCategoryCount(type: 'expense' | 'income'): number {
+  public getCategoryCount(type: 'expense' | 'income'): number {
     return this.categories.filter(c => c.type === type).length;
   }
 }

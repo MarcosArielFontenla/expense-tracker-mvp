@@ -2,9 +2,9 @@ export interface Budget {
     id: string;
     categoryId: string;
     amount: number;
-    month: number; // 1-12
+    month: number;
     year: number;
-    alertThreshold: number; // Percentage (e.g., 80 for 80%)
+    alertThreshold: number;
     createdAt: Date;
     updatedAt: Date;
 }

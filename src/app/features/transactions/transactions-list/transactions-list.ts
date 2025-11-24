@@ -31,10 +31,9 @@ export class TransactionsList implements OnInit {
     private transactionsService: TransactionsService,
     private categoriesService: CategoriesService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+    @Inject(PLATFORM_ID) private platformId: Object) { }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadCategories();
       this.loadTransactions();
@@ -46,13 +45,13 @@ export class TransactionsList implements OnInit {
     }
   }
 
-  loadCategories(): void {
+  public loadCategories(): void {
     this.categoriesService.getCategories().subscribe(cats => {
       this.categories = cats;
     });
   }
 
-  loadTransactions(): void {
+  public loadTransactions(): void {
     this.isLoading = true;
     this.error = null;
 
@@ -88,11 +87,11 @@ export class TransactionsList implements OnInit {
     });
   }
 
-  onFilterChange(): void {
+  public onFilterChange(): void {
     this.loadTransactions();
   }
 
-  clearFilters(): void {
+  public clearFilters(): void {
     this.selectedType = 'all';
     this.selectedCategoryId = 'all';
     this.startDateStr = '';
@@ -100,15 +99,15 @@ export class TransactionsList implements OnInit {
     this.loadTransactions();
   }
 
-  onCreateTransaction(): void {
+  public onCreateTransaction(): void {
     this.router.navigate(['/transactions/new']);
   }
 
-  onEditTransaction(id: string): void {
+  public onEditTransaction(id: string): void {
     this.router.navigate(['/transactions/edit', id]);
   }
 
-  onDeleteTransaction(transaction: Transaction): void {
+  public onDeleteTransaction(transaction: Transaction): void {
     if (confirm(`¿Eliminar transacción de ${transaction.amount}?`)) {
       this.transactionsService.deleteTransaction(transaction.id).subscribe({
         error: (err) => console.error(err)
@@ -116,7 +115,7 @@ export class TransactionsList implements OnInit {
     }
   }
 
-  getTotalAmount(): number {
+  public getTotalAmount(): number {
     return this.transactions.reduce((sum, t) => {
       return t.type === 'income' ? sum + t.amount : sum - t.amount;
     }, 0);

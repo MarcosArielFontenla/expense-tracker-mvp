@@ -52,41 +52,45 @@ export class BudgetList implements OnInit {
         }
     }
 
-    ngOnInit(): void {
+    public ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) {
             this.loadCategories();
         }
     }
 
-    loadCategories(): void {
+    public loadCategories(): void {
         this.categoriesService.getCategories().subscribe(cats => {
             cats.forEach(c => this.categories.set(c.id, c));
             this.loadBudgets();
         });
     }
 
-    loadBudgets(): void {
+    public loadBudgets(): void {
         this.budgetService.getBudgets(Number(this.selectedMonth), Number(this.selectedYear))
             .subscribe(budgets => {
                 this.budgets = budgets;
             });
     }
 
-    onPeriodChange(): void {
+    public onPeriodChange(): void {
         this.loadBudgets();
     }
 
-    getCategory(id: string): Category | undefined {
+    public getCategory(id: string): Category | undefined {
         return this.categories.get(id);
     }
 
-    getProgressBarColor(status: BudgetStatus): string {
-        if (status.isOverBudget) return 'bg-red-600';
-        if (status.hasAlert) return 'bg-yellow-500';
+    public getProgressBarColor(status: BudgetStatus): string {
+        if (status.isOverBudget)
+            return 'bg-red-600';
+
+        if (status.hasAlert)
+            return 'bg-yellow-500';
+
         return 'bg-green-500';
     }
 
-    deleteBudget(id: string): void {
+    public deleteBudget(id: string): void {
         if (confirm('¿Estás seguro de eliminar este presupuesto?')) {
             this.budgetService.deleteBudget(id).subscribe(() => {
                 this.loadBudgets();

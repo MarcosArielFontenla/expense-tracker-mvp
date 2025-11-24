@@ -7,7 +7,7 @@ export interface Transaction {
     type: TransactionType;
     amount: number;
     categoryId: string;
-    category?: Category; // Optional populated category
+    category?: Category;
     date: Date;
     note: string;
     createdAt: Date;
