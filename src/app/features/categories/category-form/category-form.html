@@ -87,7 +87,7 @@
         <!-- Icon Selector -->
         <div>
             <label class="label">Ícono *</label>
-            <div class="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2">
+            <div class="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
                 <button *ngFor="let availableIcon of availableIcons" type="button" (click)="selectIcon(availableIcon)"
                     class="aspect-square flex items-center justify-center text-2xl rounded-lg border-2 transition-all hover:scale-110"
                     [class.border-primary-500]="icon?.value === availableIcon"
