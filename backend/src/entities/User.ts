@@ -29,6 +29,9 @@ export class User {
     @Column({ type: 'timestamp', nullable: true })
     emailVerificationExpires?: Date;
 
+    @Column({ type: 'varchar', length: 500, nullable: true })
+    refreshToken?: string;
+
     @CreateDateColumn()
     createdAt!: Date;
 

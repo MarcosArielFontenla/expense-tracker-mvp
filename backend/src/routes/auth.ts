@@ -90,13 +90,18 @@ router.post('/login', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Generate token
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'secret', {
-            expiresIn: '7d'
-        });
+        // Generate tokens using token service
+        const tokenService = require('../services/token.service').default;
+        const accessToken = tokenService.generateAccessToken(user.id);
+        const refreshToken = tokenService.generateRefreshToken(user.id);
+
+        // Hash and store refresh token
+        user.refreshToken = tokenService.hashRefreshToken(refreshToken);
+        await userRepository.save(user);
 
         res.json({
-            token,
+            accessToken,
+            refreshToken,
             user: {
                 id: user.id,
                 name: user.name,
@@ -269,6 +274,88 @@ router.post('/resend-verification', async (req: Request, res: Response) => {
         res.json({ message: 'If that email exists, a verification link has been sent' });
     } catch (error) {
         console.error('Resend verification error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.post('/refresh', async (req: Request, res: Response) => {
+    try {
+        const { refreshToken } = req.body;
+
+        // Validation
+        if (!refreshToken) {
+            return res.status(400).json({ message: 'Refresh token is required' });
+        }
+
+        // Verify refresh token
+        const tokenService = require('../services/token.service').default;
+        const payload = tokenService.verifyRefreshToken(refreshToken);
+
+        if (!payload) {
+            return res.status(401).json({ message: 'Invalid or expired refresh token' });
+        }
+
+        // Find user
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({ where: { id: payload.userId } });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Verify stored refresh token matches
+        if (!user.refreshToken || !tokenService.verifyHashedToken(refreshToken, user.refreshToken)) {
+            return res.status(401).json({ message: 'Invalid refresh token' });
+        }
+
+        // Generate new tokens (token rotation)
+        const newAccessToken = tokenService.generateAccessToken(user.id);
+        const newRefreshToken = tokenService.generateRefreshToken(user.id);
+
+        // Update stored refresh token
+        user.refreshToken = tokenService.hashRefreshToken(newRefreshToken);
+        await userRepository.save(user);
+
+        res.json({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
+    } catch (error) {
+        console.error('Refresh token error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Logout
+router.post('/logout', async (req: Request, res: Response) => {
+    try {
+        // Extract user ID from access token
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
+
+        const token = authHeader.substring(7);
+        const tokenService = require('../services/token.service').default;
+        const payload = tokenService.verifyAccessToken(token);
+
+        if (!payload) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+
+        // Clear refresh token from database
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({ where: { id: payload.userId } });
+
+        if (user) {
+            user.refreshToken = undefined;
+            await userRepository.save(user);
+        }
+
+        res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
