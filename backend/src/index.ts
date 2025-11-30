@@ -8,6 +8,7 @@ import categoriesRoutes from './routes/categories';
 import transactionsRoutes from './routes/transactions';
 import budgetsRoutes from './routes/budgets';
 import reportsRoutes from './routes/reports.routes';
+import { globalLimiter } from './middleware/rateLimit.middleware';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api', globalLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -30,7 +32,6 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Initialize database and start server
 AppDataSource.initialize()
     .then(() => {
         console.log('✅ Database connected successfully');
