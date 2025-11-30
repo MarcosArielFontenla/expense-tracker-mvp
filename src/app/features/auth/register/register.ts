@@ -19,38 +19,26 @@ export class Register {
     constructor(
         private fb: FormBuilder,
         private authService: AuthService,
-        private router: Router
-    ) {
+        private router: Router) {
         this.registerForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
+            name: ['', [Validators.required]],
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]],
-            confirmPassword: ['', [Validators.required]]
-        }, { validators: this.passwordMatchValidator });
-    }
-
-    passwordMatchValidator(form: FormGroup) {
-        const password = form.get('password');
-        const confirmPassword = form.get('confirmPassword');
-
-        if (password && confirmPassword && password.value !== confirmPassword.value) {
-            confirmPassword.setErrors({ passwordMismatch: true });
-            return { passwordMismatch: true };
-        }
-        return null;
+            password: ['', [Validators.required, Validators.minLength(6)]]
+        });
     }
 
     onSubmit(): void {
-        if (this.registerForm.invalid) return;
+        if (this.registerForm.invalid)
+            return;
 
         this.isSubmitting = true;
         this.error = '';
 
-        const { name, email, password } = this.registerForm.value;
-
-        this.authService.register({ name, email, password }).subscribe({
-            next: () => {
-                this.router.navigate(['/dashboard']);
+        this.authService.register(this.registerForm.value).subscribe({
+            next: (response: any) => {
+                this.router.navigate(['/verify-email-pending'], {
+                    state: { email: this.registerForm.value.email }
+                });
             },
             error: (error) => {
                 this.error = error.error?.message || 'Registration failed';
@@ -59,8 +47,19 @@ export class Register {
         });
     }
 
-    get name() { return this.registerForm.get('name'); }
-    get email() { return this.registerForm.get('email'); }
-    get password() { return this.registerForm.get('password'); }
-    get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+    get name() {
+        return this.registerForm.get('name');
+    }
+
+    get email() {
+        return this.registerForm.get('email');
+    }
+
+    get password() {
+        return this.registerForm.get('password');
+    }
+
+    get confirmPassword() {
+        return this.registerForm.get('confirmPassword');
+    }
 }

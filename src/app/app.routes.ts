@@ -14,6 +14,8 @@ import { Register } from './features/auth/register/register';
 import { ForgotPassword } from './features/auth/forgot-password/forgot-password';
 import { ResetPassword } from './features/auth/reset-password/reset-password';
 import { authGuard } from './core/guards/auth.guard';
+import { VerifyEmailPending } from './features/auth/verify-email-pending/verify-email-pending';
+import { VerifyEmailSuccess } from './features/auth/verify-email-success/verify-email-success';
 
 export const routes: Routes = [
     // Public routes
@@ -32,6 +34,14 @@ export const routes: Routes = [
     {
         path: 'reset-password/:token',
         component: ResetPassword
+    },
+    {
+        path: 'verify-email-pending',
+        component: VerifyEmailPending
+    },
+    {
+        path: 'verify-email/:token',
+        component: VerifyEmailSuccess
     },
 
     // Protected routes
