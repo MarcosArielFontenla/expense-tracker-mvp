@@ -15,12 +15,13 @@ export class Login {
     loginForm: FormGroup;
     error = '';
     isSubmitting = false;
+    showResendLink = false;
+    userEmail = '';
 
     constructor(
         private fb: FormBuilder,
         private authService: AuthService,
-        private router: Router
-    ) {
+        private router: Router) {
         this.loginForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
             password: ['', [Validators.required, Validators.minLength(6)]]
@@ -28,10 +29,12 @@ export class Login {
     }
 
     onSubmit(): void {
-        if (this.loginForm.invalid) return;
+        if (this.loginForm.invalid)
+            return;
 
         this.isSubmitting = true;
         this.error = '';
+        this.showResendLink = false;
 
         this.authService.login(this.loginForm.value).subscribe({
             next: () => {
@@ -40,10 +43,26 @@ export class Login {
             error: (error) => {
                 this.error = error.error?.message || 'Login failed';
                 this.isSubmitting = false;
+
+                if (error.status === 403 && error.error?.emailVerified === false) {
+                    this.showResendLink = true;
+                    this.userEmail = this.loginForm.value.email;
+                }
             }
         });
     }
 
-    get email() { return this.loginForm.get('email'); }
-    get password() { return this.loginForm.get('password'); }
+    public goToVerificationPage(): void {
+        this.router.navigate(['/verify-email-pending'], {
+            state: { email: this.userEmail }
+        });
+    }
+
+    get email() {
+        return this.loginForm.get('email');
+    }
+
+    get password() {
+        return this.loginForm.get('password');
+    }
 }

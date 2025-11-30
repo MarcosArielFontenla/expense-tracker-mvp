@@ -88,6 +88,59 @@ class EmailService {
             html
         });
     }
+
+    async sendVerificationEmail(email: string, verificationToken: string): Promise<void> {
+        const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:4200'}/verify-email/${verificationToken}`;
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
+                    .info { background: #dbeafe; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>✉️ Verifica tu Email</h1>
+                    </div>
+                    <div class="content">
+                        <p>¡Bienvenido a <strong>Expense Tracker</strong>!</p>
+                        <p>Gracias por registrarte. Para completar tu registro y comenzar a usar tu cuenta, necesitamos verificar tu dirección de email.</p>
+                        <p>Haz clic en el botón de abajo para verificar tu email:</p>
+                        <div style="text-align: center;">
+                            <a href="${verifyUrl}" class="button">Verificar Email</a>
+                        </div>
+                        <p>O copia y pega este enlace en tu navegador:</p>
+                        <p style="word-break: break-all; color: #667eea;">${verifyUrl}</p>
+                        <div class="info">
+                            <strong>ℹ️ Nota:</strong> Este enlace expirará en <strong>24 horas</strong>.
+                        </div>
+                        <p>Si no creaste esta cuenta, puedes ignorar este correo de forma segura.</p>
+                        <p>Saludos,<br>El equipo de Expense Tracker</p>
+                    </div>
+                    <div class="footer">
+                        <p>Este es un email automático, por favor no respondas.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        await this.sendEmail({
+            to: email,
+            subject: '✉️ Verifica tu Email - Expense Tracker',
+            html
+        });
+    }
 }
 
 export default new EmailService();

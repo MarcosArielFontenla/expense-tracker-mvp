@@ -20,6 +20,15 @@ export class User {
     @Column({ type: 'timestamp', nullable: true })
     resetPasswordExpires?: Date;
 
+    @Column({ type: 'boolean', default: false })
+    emailVerified!: boolean;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    emailVerificationToken?: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    emailVerificationExpires?: Date;
+
     @CreateDateColumn()
     createdAt!: Date;
 
