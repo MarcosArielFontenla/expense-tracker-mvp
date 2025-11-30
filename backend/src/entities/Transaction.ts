@@ -24,13 +24,13 @@ export class Transaction {
     @Column({ type: 'decimal', precision: 18, scale: 2 })
     amount!: number;
 
-    @Column({ type: 'nvarchar', length: 10 })
+    @Column({ type: 'varchar', length: 10 })
     type!: 'income' | 'expense';
 
-    @Column({ type: 'datetime' })
+    @Column({ type: 'timestamp' })
     date!: Date;
 
-    @Column({ type: 'nvarchar', length: 255, nullable: true })
+    @Column({ type: 'varchar', length: 255, nullable: true })
     note?: string;
 
     @CreateDateColumn()
