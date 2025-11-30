@@ -11,6 +11,8 @@ import { Layout } from './core/layout/layout';
 import { NotFound } from './core/pages/not-found/not-found';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
+import { ForgotPassword } from './features/auth/forgot-password/forgot-password';
+import { ResetPassword } from './features/auth/reset-password/reset-password';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -22,6 +24,14 @@ export const routes: Routes = [
     {
         path: 'register',
         component: Register
+    },
+    {
+        path: 'forgot-password',
+        component: ForgotPassword
+    },
+    {
+        path: 'reset-password/:token',
+        component: ResetPassword
     },
 
     // Protected routes

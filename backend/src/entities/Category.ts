@@ -13,18 +13,18 @@ export class Category {
     @JoinColumn({ name: 'userId' })
     user!: User;
 
-    @Column({ type: 'nvarchar', length: 50 })
+    @Column({ type: 'varchar', length: 50 })
     name!: string;
 
-    @Column({ type: 'nvarchar', length: 10 })
+    @Column({ type: 'varchar', length: 10 })
     icon!: string;
 
-    @Column({ type: 'nvarchar', length: 20 })
+    @Column({ type: 'varchar', length: 20 })
     color!: string;
 
-    @Column({ type: 'nvarchar', length: 10 })
+    @Column({ type: 'varchar', length: 10 })
     type!: 'income' | 'expense';
 
-    @Column({ type: 'bit', default: false })
+    @Column({ type: 'boolean', default: false })
     isDefault!: boolean;
 }

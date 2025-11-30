@@ -5,14 +5,20 @@ export class User {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column({ type: 'nvarchar', length: 100 })
+    @Column({ type: 'varchar', length: 100 })
     name!: string;
 
-    @Column({ type: 'nvarchar', length: 100, unique: true })
+    @Column({ type: 'varchar', length: 100, unique: true })
     email!: string;
 
-    @Column({ type: 'nvarchar', length: 255 })
+    @Column({ type: 'varchar', length: 255 })
     passwordHash!: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    resetPasswordToken?: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    resetPasswordExpires?: Date;
 
     @CreateDateColumn()
     createdAt!: Date;

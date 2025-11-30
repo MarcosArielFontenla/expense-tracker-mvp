@@ -99,4 +99,88 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
+// Forgot Password
+router.post('/forgot-password', async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+
+        // Validation
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        // Find user
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository.findOne({ where: { email } });
+
+        if (!user) {
+            return res.json({ message: 'If that email exists, a reset link has been sent' });
+        }
+
+        // Generate reset token
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+        await userRepository.save(user);
+
+        // Send email
+        const emailService = require('../services/email.service').default;
+        await emailService.sendPasswordResetEmail(email, resetToken);
+
+        res.json({ message: 'If that email exists, a reset link has been sent' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Reset Password
+router.post('/reset-password', async (req: Request, res: Response) => {
+    try {
+        const { token, password } = req.body;
+
+        // Validation
+        if (!token || !password) {
+            return res.status(400).json({ message: 'Token and password are required' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        // Hash the token to compare
+        const crypto = require('crypto');
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Find user with valid token
+        const userRepository = AppDataSource.getRepository(User);
+        const user = await userRepository
+            .createQueryBuilder('user')
+            .where('user.resetPasswordToken = :token', { token: hashedToken })
+            .andWhere('user.resetPasswordExpires > :now', { now: new Date() })
+            .getOne();
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired token' });
+        }
+
+        // Hash new password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Update password and clear reset token
+        user.passwordHash = passwordHash;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await userRepository.save(user);
+
+        res.json({ message: 'Password reset successful' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 export default router;
