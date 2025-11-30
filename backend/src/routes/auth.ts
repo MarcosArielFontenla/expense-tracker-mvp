@@ -3,8 +3,15 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../config/database';
 import { User } from '../entities/User';
+import { authLimiter } from '../middleware/rateLimit.middleware';
 
 const router = express.Router();
+
+// Apply rate limiting to sensitive routes
+router.use('/register', authLimiter);
+router.use('/login', authLimiter);
+router.use('/forgot-password', authLimiter);
+router.use('/resend-verification', authLimiter);
 
 // Register
 router.post('/register', async (req: Request, res: Response) => {
