@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -20,11 +20,22 @@ export class Sidebar {
     ];
 
     private authService = inject(AuthService);
+    private router = inject(Router);
     currentUser$ = this.authService.currentUser$;
 
     constructor() { }
 
     public onLogout(): void {
-        this.authService.logout();
+        this.authService.logout().subscribe({
+            next: () => {
+                // Navigation handled in AuthService
+            },
+            error: (error) => {
+                console.error('Logout error:', error);
+                // Force client-side logout even if backend fails
+                this.authService.clearTokens();
+                this.router.navigate(['/login']);
+            }
+        });
     }
 }
