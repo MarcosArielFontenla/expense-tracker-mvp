@@ -4,6 +4,13 @@ import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../config/database';
 import { User } from '../entities/User';
 import { authLimiter } from '../middleware/rateLimit.middleware';
+import { validateRequest } from '../middleware/validateRequest';
+import {
+    registerValidation,
+    loginValidation,
+    forgotPasswordValidation,
+    resetPasswordValidation
+} from '../validators/auth.validation';
 
 const router = express.Router();
 
@@ -14,14 +21,9 @@ router.use('/forgot-password', authLimiter);
 router.use('/resend-verification', authLimiter);
 
 // Register
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', registerValidation, validateRequest, async (req: Request, res: Response) => {
     try {
         const { name, email, password } = req.body;
-
-        // Validation
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
 
         // Check if user exists
         const userRepository = AppDataSource.getRepository(User);
@@ -65,14 +67,9 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // Login
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', loginValidation, validateRequest, async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-
-        // Validation
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
-        }
 
         // Find user
         const userRepository = AppDataSource.getRepository(User);
@@ -122,14 +119,9 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // Forgot Password
-router.post('/forgot-password', async (req: Request, res: Response) => {
+router.post('/forgot-password', forgotPasswordValidation, validateRequest, async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
-
-        // Validation
-        if (!email) {
-            return res.status(400).json({ message: 'Email is required' });
-        }
 
         // Find user
         const userRepository = AppDataSource.getRepository(User);
@@ -160,18 +152,9 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
 });
 
 // Reset Password
-router.post('/reset-password', async (req: Request, res: Response) => {
+router.post('/reset-password', resetPasswordValidation, validateRequest, async (req: Request, res: Response) => {
     try {
         const { token, password } = req.body;
-
-        // Validation
-        if (!token || !password) {
-            return res.status(400).json({ message: 'Token and password are required' });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters' });
-        }
 
         // Hash the token to compare
         const crypto = require('crypto');

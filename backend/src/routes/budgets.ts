@@ -4,6 +4,8 @@ import { Budget } from '../entities/Budget';
 import { Transaction } from '../entities/Transaction';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { Between } from 'typeorm';
+import { validateRequest } from '../middleware/validateRequest';
+import { budgetValidation } from '../validators/budget.validation';
 
 const router = express.Router();
 
@@ -60,13 +62,9 @@ router.get('/:month/:year', authMiddleware, async (req: AuthRequest, res: Respon
 });
 
 // Create budget
-router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, budgetValidation, validateRequest, async (req: AuthRequest, res: Response) => {
     try {
         const { categoryId, amount, month, year, alertThreshold } = req.body;
-
-        if (!categoryId || !amount || !month || !year) {
-            return res.status(400).json({ message: 'Required fields missing' });
-        }
 
         const budgetRepository = AppDataSource.getRepository(Budget);
 
@@ -102,7 +100,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // Update budget
-router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.put('/:id', authMiddleware, budgetValidation, validateRequest, async (req: AuthRequest, res: Response) => {
     try {
         const { amount, alertThreshold } = req.body;
         const budgetRepository = AppDataSource.getRepository(Budget);
