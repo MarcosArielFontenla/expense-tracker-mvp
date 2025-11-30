@@ -3,6 +3,8 @@ import { AppDataSource } from '../config/database';
 import { Transaction } from '../entities/Transaction';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { validateRequest } from '../middleware/validateRequest';
+import { transactionValidation } from '../validators/transaction.validation';
 
 const router = express.Router();
 
@@ -76,13 +78,9 @@ router.get('/summary/:month/:year', authMiddleware, async (req: AuthRequest, res
 });
 
 // Create transaction
-router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, transactionValidation, validateRequest, async (req: AuthRequest, res: Response) => {
     try {
         const { type, amount, categoryId, date, note } = req.body;
-
-        if (!type || !amount || !categoryId || !date) {
-            return res.status(400).json({ message: 'Required fields missing' });
-        }
 
         const transactionRepository = AppDataSource.getRepository(Transaction);
         const transaction = transactionRepository.create({
@@ -103,7 +101,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // Update transaction
-router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.put('/:id', authMiddleware, transactionValidation, validateRequest, async (req: AuthRequest, res: Response) => {
     try {
         const { type, amount, categoryId, date, note } = req.body;
         const transactionRepository = AppDataSource.getRepository(Transaction);
