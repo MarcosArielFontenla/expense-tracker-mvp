@@ -1,36 +1,58 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+    const authService = inject(AuthService);
     const router = inject(Router);
-    const platformId = inject(PLATFORM_ID);
-    const isBrowser = isPlatformBrowser(platformId);
 
-    let token = null;
+    // Don't add token to auth endpoints
+    const isAuthEndpoint = req.url.includes('/auth/login') ||
+        req.url.includes('/auth/register') ||
+        req.url.includes('/auth/refresh') ||
+        req.url.includes('/auth/verify-email') ||
+        req.url.includes('/auth/forgot-password') ||
+        req.url.includes('/auth/reset-password');
 
-    if (isBrowser) {
-        token = localStorage.getItem('auth_token');
+    if (isAuthEndpoint) {
+        return next(req);
     }
 
-    if (token) {
+    // Add access token to request
+    const accessToken = authService.getAccessToken();
+
+    if (accessToken) {
         req = req.clone({
             setHeaders: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${accessToken}`
             }
         });
     }
 
+    // Handle response and auto-refresh on 401
     return next(req).pipe(
-        catchError((error: HttpErrorResponse) => {
-            if (error.status === 401) {
-                if (isBrowser) {
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('auth_user');
-                }
-                router.navigate(['/login']);
+        catchError(error => {
+            if (error.status === 401 && !req.url.includes('/auth/refresh')) {
+                // Try to refresh token
+                return authService.refreshAccessToken().pipe(
+                    switchMap(() => {
+                        // Retry original request with new token
+                        const newToken = authService.getAccessToken();
+                        const clonedReq = req.clone({
+                            setHeaders: {
+                                Authorization: `Bearer ${newToken}`
+                            }
+                        });
+                        return next(clonedReq);
+                    }),
+                    catchError(refreshError => {
+                        authService.clearTokens();
+                        router.navigate(['/login']);
+                        return throwError(() => refreshError);
+                    })
+                );
             }
             return throwError(() => error);
         })
