@@ -9,6 +9,8 @@ import transactionsRoutes from './routes/transactions';
 import budgetsRoutes from './routes/budgets';
 import reportsRoutes from './routes/reports.routes';
 import { globalLimiter } from './middleware/rateLimit.middleware';
+import { errorHandler } from './middleware/error.middleware';
+import { AppError } from './utils/AppError';
 
 dotenv.config();
 
@@ -31,6 +33,14 @@ app.use('/api/reports', reportsRoutes);
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
 });
+
+// Handle unhandled routes
+app.use((req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// Global Error Handler
+app.use(errorHandler);
 
 AppDataSource.initialize()
     .then(() => {
