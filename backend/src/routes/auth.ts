@@ -1,6 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../config/database';
 import { User } from '../entities/User';
 import { authLimiter } from '../middleware/rateLimit.middleware';
@@ -13,6 +12,7 @@ import {
 } from '../validators/auth.validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
+import { AuditService } from '../services/audit.service';
 
 const router = express.Router();
 
@@ -96,6 +96,9 @@ router.post('/login', loginValidation, validateRequest, asyncHandler(async (req:
     user.refreshToken = tokenService.hashRefreshToken(refreshToken);
     await userRepository.save(user);
 
+    // Audit Log
+    await AuditService.logAction(user.id, 'LOGIN_SUCCESS', req, { email: user.email });
+
     res.json({
         accessToken,
         refreshToken,
@@ -163,6 +166,9 @@ router.post('/reset-password', resetPasswordValidation, validateRequest, asyncHa
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await userRepository.save(user);
+
+    // Audit Log
+    await AuditService.logAction(user.id, 'PASSWORD_RESET', req);
 
     res.json({ message: 'Password reset successful' });
 }));
@@ -304,6 +310,9 @@ router.post('/logout', asyncHandler(async (req: Request, res: Response) => {
     if (user) {
         user.refreshToken = undefined;
         await userRepository.save(user);
+
+        // Audit Log
+        await AuditService.logAction(user.id, 'LOGOUT', req);
     }
 
     res.json({ message: 'Logged out successfully' });

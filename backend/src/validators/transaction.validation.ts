@@ -4,9 +4,9 @@ export const transactionValidation = [
     body('amount')
         .notEmpty().withMessage('Amount is required')
         .isFloat({ gt: 0 }).withMessage('Amount must be a positive number'),
-    body('description')
-        .trim()
-        .notEmpty().withMessage('Description is required'),
+    body('note')
+        .optional()
+        .trim(),
     body('date')
         .notEmpty().withMessage('Date is required')
         .isISO8601().withMessage('Date must be a valid ISO 8601 date'),
@@ -15,5 +15,5 @@ export const transactionValidation = [
         .isIn(['income', 'expense']).withMessage('Type must be either income or expense'),
     body('categoryId')
         .notEmpty().withMessage('Category ID is required')
-        .isInt().withMessage('Category ID must be an integer')
+        .isUUID().withMessage('Category ID must be a valid UUID')
 ];
