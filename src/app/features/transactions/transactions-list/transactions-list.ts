@@ -117,7 +117,8 @@ export class TransactionsList implements OnInit {
 
   public getTotalAmount(): number {
     return this.transactions.reduce((sum, t) => {
-      return t.type === 'income' ? sum + t.amount : sum - t.amount;
+      const amount = Number(t.amount);
+      return t.type === 'income' ? sum + amount : sum - amount;
     }, 0);
   }
 }

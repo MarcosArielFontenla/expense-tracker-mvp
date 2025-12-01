@@ -8,6 +8,7 @@ import { validateRequest } from '../middleware/validateRequest';
 import { budgetValidation } from '../validators/budget.validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
+import { AuditService } from '../services/audit.service';
 
 const router = express.Router();
 
@@ -88,6 +89,10 @@ router.post('/', authMiddleware, budgetValidation, validateRequest, asyncHandler
     });
 
     await budgetRepository.save(budget);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'BUDGET_CREATE', req, budget, budget.id, 'Budget');
+
     res.status(201).json(budget);
 }));
 
@@ -108,6 +113,10 @@ router.put('/:id', authMiddleware, budgetValidation, validateRequest, asyncHandl
     budget.alertThreshold = alertThreshold !== undefined ? alertThreshold : budget.alertThreshold;
 
     await budgetRepository.save(budget);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'BUDGET_UPDATE', req, budget, budget.id, 'Budget');
+
     res.json(budget);
 }));
 
@@ -123,6 +132,10 @@ router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res:
     }
 
     await budgetRepository.remove(budget);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'BUDGET_DELETE', req, { id: req.params.id }, req.params.id, 'Budget');
+
     res.json({ message: 'Budget deleted successfully' });
 }));
 
