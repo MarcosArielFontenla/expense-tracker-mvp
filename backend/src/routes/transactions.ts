@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { Transaction } from '../entities/Transaction';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
@@ -7,6 +7,7 @@ import { validateRequest } from '../middleware/validateRequest';
 import { transactionValidation } from '../validators/transaction.validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
+import { AuditService } from '../services/audit.service';
 
 const router = express.Router();
 
@@ -55,11 +56,20 @@ router.get('/summary/:month/:year', authMiddleware, asyncHandler(async (req: Aut
 
     const income = transactions
         .filter(t => t.type === 'income')
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+        .reduce((sum, t) => {
+            console.log(`Income: ${t.amount} (${typeof t.amount})`);
+            return sum + Number(t.amount);
+        }, 0);
 
     const expense = transactions
         .filter(t => t.type === 'expense')
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+        .reduce((sum, t) => {
+            console.log(`Expense: ${t.amount} (${typeof t.amount})`);
+            return sum + Number(t.amount);
+        }, 0);
+
+    console.log('Total Income:', income);
+    console.log('Total Expense:', expense);
 
     res.json({
         totalIncome: income,
@@ -84,6 +94,10 @@ router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHa
     });
 
     await transactionRepository.save(transaction);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'TRANSACTION_CREATE', req, transaction, transaction.id, 'Transaction');
+
     res.status(201).json(transaction);
 }));
 
@@ -107,6 +121,10 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
     transaction.note = note !== undefined ? note : transaction.note;
 
     await transactionRepository.save(transaction);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'TRANSACTION_UPDATE', req, transaction, transaction.id, 'Transaction');
+
     res.json(transaction);
 }));
 
@@ -122,7 +140,40 @@ router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res:
     }
 
     await transactionRepository.remove(transaction);
+
+    // Audit Log
+    await AuditService.logAction(req.userId!, 'TRANSACTION_DELETE', req, { id: req.params.id }, req.params.id, 'Transaction');
+
     res.json({ message: 'Transaction deleted successfully' });
+}));
+
+// Debug endpoint
+router.get('/debug-summary', asyncHandler(async (req: Request, res: Response) => {
+    const transactionRepository = AppDataSource.getRepository(Transaction);
+    const transactions = await transactionRepository.find();
+
+    const debugData = transactions.map(t => ({
+        id: t.id,
+        amount: t.amount,
+        typeOfAmount: typeof t.amount,
+        parsedAmount: Number(t.amount),
+        type: t.type
+    }));
+
+    const income = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const expense = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    res.json({
+        income,
+        expense,
+        balance: income - expense,
+        transactions: debugData
+    });
 }));
 
 export default router;
