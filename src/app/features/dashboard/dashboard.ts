@@ -45,21 +45,32 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   public loadDashboardData(): void {
     this.isLoading = true;
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1;
-    const currentYear = today.getFullYear();
 
-    // 1. Get Monthly Summary
-    this.transactionsService.getMonthlySummary(currentMonth, currentYear).subscribe(summary => {
-      this.summary = summary;
-    });
-
-    // 2. Get Recent Transactions
+    // Get ALL Transactions and calculate totals
     this.transactionsService.getTransactions().subscribe(transactions => {
       this.recentTransactions = transactions.slice(0, 5);
+
+      // Calculate totals from ALL transactions
+      const income = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      const expense = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+      this.summary = {
+        totalIncome: income,
+        totalExpense: expense,
+        balance: income - expense,
+        transactionCount: transactions.length,
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear()
+      };
+
       this.isLoading = false;
 
-      // 3. Update Charts
+      // Update Charts
       setTimeout(() => {
         this.updateBreakdownChart(transactions);
         this.updateTrendChart(transactions);
@@ -77,7 +88,7 @@ export class Dashboard implements OnInit, AfterViewInit {
     expenses.forEach(t => {
       const catName = t.category?.name || 'Otros';
       const current = categoryTotals.get(catName) || 0;
-      categoryTotals.set(catName, current + t.amount);
+      categoryTotals.set(catName, current + Number(t.amount));
 
       if (t.category?.color) {
         categoryColors.set(catName, t.category.color);
@@ -125,19 +136,20 @@ export class Dashboard implements OnInit, AfterViewInit {
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
+
       return d.toISOString().substring(0, 10);
     }).reverse();
 
     const incomeData = last7Days.map(date => {
       return transactions
         .filter(t => t.type === 'income' && t.date.toString().startsWith(date))
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + Number(t.amount), 0);
     });
 
     const expenseData = last7Days.map(date => {
       return transactions
         .filter(t => t.type === 'expense' && t.date.toString().startsWith(date))
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + Number(t.amount), 0);
     });
 
     const labels = last7Days.map(d => new Date(d).toLocaleDateString('es-ES', { weekday: 'short' }));
