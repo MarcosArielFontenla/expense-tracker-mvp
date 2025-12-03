@@ -32,6 +32,9 @@ export class User {
     @Column({ type: 'varchar', length: 500, nullable: true })
     refreshToken?: string;
 
+    @Column({ type: 'varchar', length: 3, default: 'USD' })
+    currency!: string;
+
     @CreateDateColumn()
     createdAt!: Date;
 

@@ -5,6 +5,7 @@ import { ReportsService, DetailedMonthlyReport, CustomRangeReport } from './serv
 import { CategoriesService } from '../categories/services/categories.service';
 import { Category } from '../../core/models/category.model';
 import { Transaction } from '../../core/models/transaction.model';
+import { AuthService } from '../../core/services/auth.service';
 
 type ReportType = 'monthly' | 'custom' | 'category';
 
@@ -36,6 +37,7 @@ export class Reports implements OnInit {
 
   // UI State
   isLoading = false;
+  userCurrency: string = 'USD';
 
   months = [
     { value: 1, label: 'Enero' },
@@ -57,6 +59,7 @@ export class Reports implements OnInit {
   constructor(
     private reportsService: ReportsService,
     private categoriesService: CategoriesService,
+    private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object) {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -74,6 +77,13 @@ export class Reports implements OnInit {
 
   public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      // Get user currency
+      this.authService.currentUser$.subscribe((user: any) => {
+        if (user) {
+          this.userCurrency = user.currency || 'USD';
+        }
+      });
+
       this.loadCategories();
       this.loadReport();
     }

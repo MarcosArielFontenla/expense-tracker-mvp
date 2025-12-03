@@ -6,6 +6,7 @@ import { TransactionsService } from '../service/transactions.service';
 import { CategoriesService } from '../../categories/services/categories.service';
 import { Transaction, TransactionFilter } from '../../../core/models/transaction.model';
 import { Category } from '../../../core/models/category.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-transactions-list',
@@ -19,6 +20,7 @@ export class TransactionsList implements OnInit {
   categories: Category[] = [];
   isLoading = false;
   error: string | null = null;
+  userCurrency: string = 'USD';
 
   // Filters
   filter: TransactionFilter = {};
@@ -30,11 +32,19 @@ export class TransactionsList implements OnInit {
   constructor(
     private transactionsService: TransactionsService,
     private categoriesService: CategoriesService,
+    private authService: AuthService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
   public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      // Get user currency
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.userCurrency = user.currency || 'USD';
+        }
+      });
+
       this.loadCategories();
       this.loadTransactions();
 

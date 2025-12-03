@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { TransactionsService } from '../transactions/service/transactions.service';
 import { Transaction, MonthlySummary } from '../../core/models/transaction.model';
+import { AuthService } from '../../core/services/auth.service';
 
 Chart.register(...registerables);
 
@@ -21,17 +22,26 @@ export class Dashboard implements OnInit, AfterViewInit {
   summary: MonthlySummary | null = null;
   recentTransactions: Transaction[] = [];
   isLoading = false;
+  userCurrency: string = 'USD';
 
   private breakdownChart: Chart | null = null;
   private trendChart: Chart | null = null;
 
   constructor(
     private transactionsService: TransactionsService,
+    private authService: AuthService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
   public ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      // Get user currency
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.userCurrency = user.currency || 'USD';
+        }
+      });
+
       this.loadDashboardData();
 
       this.transactionsService.refresh$.subscribe(() => {
@@ -136,7 +146,6 @@ export class Dashboard implements OnInit, AfterViewInit {
     const last7Days = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
-
       return d.toISOString().substring(0, 10);
     }).reverse();
 
