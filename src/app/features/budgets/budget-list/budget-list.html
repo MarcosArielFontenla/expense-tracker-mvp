@@ -45,7 +45,7 @@
                             {{ getCategory(item.budget.categoryId)?.name || 'Categoría Desconocida' }}
                         </h3>
                         <p class="text-xs text-gray-500">
-                            Límite: {{ item.budget.amount | currency:'USD':'symbol':'1.0-0' }}
+                            Límite: {{ item.budget.amount | currency:userCurrency:'symbol':'1.0-0' }}
                         </p>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
             <div class="mb-2">
                 <div class="flex justify-between text-sm mb-1">
                     <span class="font-medium" [class.text-red-600]="item.isOverBudget">
-                        {{ item.spent | currency:'USD':'symbol':'1.0-0' }}
+                        {{ item.spent | currency:userCurrency:'symbol':'1.0-0' }}
                     </span>
                     <span class="text-gray-500">
                         {{ item.percentageUsed | number:'1.0-0' }}%
@@ -88,10 +88,10 @@
             <!-- Status Text -->
             <div class="text-xs mt-2">
                 <span *ngIf="item.isOverBudget" class="text-red-600 font-medium">
-                    Excedido por {{ (item.spent - item.budget.amount) | currency:'USD':'symbol':'1.0-0' }}
+                    Excedido por {{ (item.spent - item.budget.amount) | currency:userCurrency:'symbol':'1.0-0' }}
                 </span>
                 <span *ngIf="!item.isOverBudget" class="text-gray-500">
-                    Disponible: {{ item.remaining | currency:'USD':'symbol':'1.0-0' }}
+                    Disponible: {{ item.remaining | currency:userCurrency:'symbol':'1.0-0' }}
                 </span>
             </div>
         </div>

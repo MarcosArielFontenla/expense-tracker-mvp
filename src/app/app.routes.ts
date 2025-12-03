@@ -50,12 +50,12 @@ export const routes: Routes = [
         component: Layout,
         canActivate: [authGuard],
         children: [
+            // Dashboard
             {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'
             },
-            // Dashboard
             {
                 path: 'dashboard',
                 component: Dashboard
@@ -101,6 +101,12 @@ export const routes: Routes = [
             {
                 path: 'budgets/edit/:id',
                 component: BudgetForm
+            },
+
+            // Settings route
+            {
+                path: 'settings',
+                loadComponent: () => import('./features/settings/settings').then(m => m.Settings)
             },
 
             // Reports route

@@ -286,6 +286,92 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
     });
 }));
 
+// Get user profile
+router.get('/profile', asyncHandler(async (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new AppError('No token provided', 401);
+    }
+
+    const token = authHeader.substring(7);
+    const tokenService = require('../services/token.service').default;
+    const payload = tokenService.verifyAccessToken(token);
+
+    if (!payload) {
+        throw new AppError('Invalid token', 401);
+    }
+
+    // Find user
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: payload.userId } });
+
+    if (!user) {
+        throw new AppError('User not found', 404);
+    }
+
+    res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        currency: user.currency,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt
+    });
+}));
+
+// Update user profile
+router.patch('/profile', asyncHandler(async (req: Request, res: Response) => {
+    const { updateProfileValidation } = require('../validators/user.validation');
+    const { validateRequest } = require('../middleware/validateRequest');
+
+    // Validate request
+    await Promise.all(updateProfileValidation.map((validation: any) => validation.run(req)));
+    validateRequest(req, res, () => { });
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new AppError('No token provided', 401);
+    }
+
+    const token = authHeader.substring(7);
+    const tokenService = require('../services/token.service').default;
+    const payload = tokenService.verifyAccessToken(token);
+
+    if (!payload) {
+        throw new AppError('Invalid token', 401);
+    }
+
+    // Find user
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({ where: { id: payload.userId } });
+
+    if (!user) {
+        throw new AppError('User not found', 404);
+    }
+
+    // Update allowed fields
+    const { name, currency } = req.body;
+
+    if (name !== undefined) user.name = name;
+    if (currency !== undefined) user.currency = currency;
+
+    await userRepository.save(user);
+
+    // Audit Log
+    await AuditService.logAction(user.id, 'PROFILE_UPDATE', req, { name, currency });
+
+    res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        currency: user.currency,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt
+    });
+}));
+
 // Logout
 router.post('/logout', asyncHandler(async (req: Request, res: Response) => {
     // Extract user ID from access token

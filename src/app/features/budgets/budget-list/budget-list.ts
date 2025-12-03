@@ -6,6 +6,7 @@ import { BudgetService } from '../services/budget.service';
 import { CategoriesService } from '../../categories/services/categories.service';
 import { BudgetStatus } from '../../../core/models/budget.model';
 import { Category } from '../../../core/models/category.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
     selector: 'app-budget-list',
@@ -17,6 +18,7 @@ import { Category } from '../../../core/models/category.model';
 export class BudgetList implements OnInit {
     budgets: BudgetStatus[] = [];
     categories: Map<string, Category> = new Map();
+    userCurrency: string = 'USD';
 
     selectedMonth: number;
     selectedYear: number;
@@ -41,6 +43,7 @@ export class BudgetList implements OnInit {
     constructor(
         private budgetService: BudgetService,
         private categoriesService: CategoriesService,
+        private authService: AuthService,
         @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         this.selectedMonth = today.getMonth() + 1;
@@ -54,6 +57,13 @@ export class BudgetList implements OnInit {
 
     public ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) {
+            // Get user currency
+            this.authService.currentUser$.subscribe(user => {
+                if (user) {
+                    this.userCurrency = user.currency || 'USD';
+                }
+            });
+
             this.loadCategories();
         }
     }

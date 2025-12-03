@@ -29,7 +29,7 @@
             </div>
             <div class="flex items-baseline">
                 <p class="text-3xl font-bold text-gray-900">
-                    {{ summary?.totalIncome || 0 | currency:'USD':'symbol':'1.0-0' }}
+                    {{ summary?.totalIncome || 0 | currency:userCurrency:'symbol':'1.0-0' }}
                 </p>
             </div>
         </div>
@@ -48,7 +48,7 @@
             </div>
             <div class="flex items-baseline">
                 <p class="text-3xl font-bold text-gray-900">
-                    {{ summary?.totalExpense || 0 | currency:'USD':'symbol':'1.0-0' }}
+                    {{ summary?.totalExpense || 0 | currency:userCurrency:'symbol':'1.0-0' }}
                 </p>
             </div>
         </div>
@@ -68,7 +68,7 @@
             <div class="flex items-baseline">
                 <p class="text-3xl font-bold" [class.text-green-600]="(summary?.balance || 0) >= 0"
                     [class.text-red-600]="(summary?.balance || 0) < 0">
-                    {{ summary?.balance || 0 | currency:'USD':'symbol':'1.0-0' }}
+                    {{ summary?.balance || 0 | currency:userCurrency:'symbol':'1.0-0' }}
                 </p>
             </div>
         </div>
@@ -134,7 +134,8 @@
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
                                 [class.bg-green-100]="t.type === 'income'" [class.text-green-800]="t.type === 'income'"
                                 [class.bg-red-100]="t.type === 'expense'" [class.text-red-800]="t.type === 'expense'">
-                                {{ t.type === 'income' ? '+' : '-' }} {{ t.amount | currency:'USD':'symbol':'1.0-0' }}
+                                {{ t.type === 'income' ? '+' : '-' }} {{ t.amount |
+                                currency:userCurrency:'symbol':'1.0-0' }}
                             </span>
                         </td>
                     </tr>

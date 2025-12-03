@@ -79,7 +79,7 @@
             <div class="card-icon">💰</div>
             <div class="card-content">
                 <h3>Total Ingresos</h3>
-                <p class="amount">{{ totalIncome | currency }}</p>
+                <p class="amount">{{ totalIncome | currency:userCurrency }}</p>
             </div>
         </div>
 
@@ -87,7 +87,7 @@
             <div class="card-icon">💸</div>
             <div class="card-content">
                 <h3>Total Gastos</h3>
-                <p class="amount">{{ totalExpenses | currency }}</p>
+                <p class="amount">{{ totalExpenses | currency:userCurrency }}</p>
             </div>
         </div>
 
@@ -95,7 +95,7 @@
             <div class="card-icon">📊</div>
             <div class="card-content">
                 <h3>Balance</h3>
-                <p class="amount">{{ balance | currency }}</p>
+                <p class="amount">{{ balance | currency:userCurrency }}</p>
             </div>
         </div>
     </div>
@@ -150,7 +150,8 @@
                             </span>
                         </td>
                         <td class="text-right" [class]="getTransactionTypeClass(transaction.type)">
-                            {{ transaction.type === 'income' ? '+' : '-' }}{{ transaction.amount | currency }}
+                            {{ transaction.type === 'income' ? '+' : '-' }}{{ transaction.amount | currency:userCurrency
+                            }}
                         </td>
                     </tr>
                 </tbody>
