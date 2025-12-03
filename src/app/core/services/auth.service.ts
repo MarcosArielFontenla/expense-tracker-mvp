@@ -52,6 +52,24 @@ export class AuthService {
             }));
     }
 
+    public requestPasswordReset(email: string): Observable<any> {
+        return this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email });
+    }
+
+    public getProfile(): Observable<any> {
+        return this.http.get(`${environment.apiUrl}/auth/profile`);
+    }
+
+    public updateProfile(data: { name?: string; currency?: string }): Observable<any> {
+        return this.http.patch(`${environment.apiUrl}/auth/profile`, data)
+            .pipe(tap(user => {
+                if (this.isBrowser) {
+                    localStorage.setItem(this.userKey, JSON.stringify(user));
+                    this.currentUserSubject.next(user);
+                }
+            }));
+    }
+
     public logout(): Observable<any> {
         const headers = {
             'Authorization': `Bearer ${this.getAccessToken()}`

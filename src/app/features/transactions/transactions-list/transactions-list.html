@@ -12,7 +12,7 @@
                 <p class="text-sm text-gray-500">Balance Total</p>
                 <p class="text-2xl font-bold" [class.text-green-600]="getTotalAmount() >= 0"
                     [class.text-red-600]="getTotalAmount() < 0">
-                    {{ getTotalAmount() | currency:'USD':'symbol':'1.0-0' }}
+                    {{ getTotalAmount() | currency:userCurrency:'symbol':'1.0-0' }}
                 </p>
             </div>
             <button (click)="onCreateTransaction()" class="btn btn-primary flex items-center gap-2">
@@ -121,7 +121,8 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium"
                             [class.text-green-800]="t.type === 'income'" [class.bg-green-100]="t.type === 'income'"
                             [class.text-red-800]="t.type === 'expense'" [class.bg-red-100]="t.type === 'expense'">
-                            {{ t.type === 'income' ? '+' : '-' }} {{ t.amount | currency:'USD':'symbol':'1.0-0' }}
+                            {{ t.type === 'income' ? '+' : '-' }} {{ t.amount | currency:userCurrency:'symbol':'1.0-0'
+                            }}
                         </span>
                     </td>
                     <td class="text-right text-sm font-medium">
@@ -152,7 +153,7 @@
             <div class="text-right">
                 <p class="font-bold" [class.text-green-600]="t.type === 'income'"
                     [class.text-red-600]="t.type === 'expense'">
-                    {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency:'USD':'symbol':'1.0-0' }}
+                    {{ t.type === 'income' ? '+' : '-' }}{{ t.amount | currency:userCurrency:'symbol':'1.0-0' }}
                 </p>
                 <div class="flex justify-end gap-3 mt-1">
                     <button (click)="onEditTransaction(t.id)" class="text-xs text-primary-600">Editar</button>

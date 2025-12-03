@@ -16,7 +16,8 @@ export class Sidebar {
         { icon: '💸', label: 'Transacciones', path: '/transactions' },
         { icon: '🏷️', label: 'Categorías', path: '/categories' },
         { icon: '💰', label: 'Presupuestos', path: '/budgets' },
-        { icon: '📈', label: 'Reportes', path: '/reports' }
+        { icon: '📈', label: 'Reportes', path: '/reports' },
+        { icon: '⚙️', label: 'Configuración', path: '/settings' }
     ];
 
     private authService = inject(AuthService);
@@ -32,7 +33,6 @@ export class Sidebar {
             },
             error: (error) => {
                 console.error('Logout error:', error);
-                // Force client-side logout even if backend fails
                 this.authService.clearTokens();
                 this.router.navigate(['/login']);
             }
