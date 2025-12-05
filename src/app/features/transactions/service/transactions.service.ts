@@ -23,6 +23,11 @@ export class TransactionsService {
             if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
             if (filter.startDate) params = params.set('startDate', filter.startDate.toISOString());
             if (filter.endDate) params = params.set('endDate', filter.endDate.toISOString());
+            if (filter.search) params = params.set('search', filter.search);
+            if (filter.minAmount !== undefined && filter.minAmount !== null) params = params.set('minAmount', filter.minAmount.toString());
+            if (filter.maxAmount !== undefined && filter.maxAmount !== null) params = params.set('maxAmount', filter.maxAmount.toString());
+            if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
+            if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
         }
 
         return this.http.get<Transaction[]>(this.apiUrl, { params });

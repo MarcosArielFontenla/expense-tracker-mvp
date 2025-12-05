@@ -13,13 +13,16 @@ const router = express.Router();
 
 // Get all transactions with optional filters
 router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { type, categoryId, startDate, endDate } = req.query;
+    const { type, categoryId, startDate, endDate, search, minAmount, maxAmount, sortBy, sortOrder } = req.query;
     const transactionRepository = AppDataSource.getRepository(Transaction);
 
     const where: any = { userId: req.userId };
 
-    if (type) where.type = type;
-    if (categoryId) where.categoryId = categoryId;
+    if (type)
+        where.type = type;
+
+    if (categoryId)
+        where.categoryId = categoryId;
 
     // Date range filter
     if (startDate && endDate) {
@@ -30,11 +33,62 @@ router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Respo
         where.date = LessThanOrEqual(new Date(endDate as string));
     }
 
-    const transactions = await transactionRepository.find({
-        where,
-        relations: ['category'],
-        order: { date: 'DESC' }
-    });
+    // Amount range filter
+    if (minAmount && maxAmount) {
+        where.amount = Between(Number(minAmount), Number(maxAmount));
+    } else if (minAmount) {
+        where.amount = MoreThanOrEqual(Number(minAmount));
+    } else if (maxAmount) {
+        where.amount = LessThanOrEqual(Number(maxAmount));
+    }
+
+    // Text search filter (case-insensitive)
+    const queryBuilder = transactionRepository
+        .createQueryBuilder('transaction')
+        .leftJoinAndSelect('transaction.category', 'category')
+        .where('transaction.userId = :userId', { userId: req.userId });
+
+    if (type) {
+        queryBuilder.andWhere('transaction.type = :type', { type });
+    }
+
+    if (categoryId) {
+        queryBuilder.andWhere('transaction.categoryId = :categoryId', { categoryId });
+    }
+
+    if (startDate && endDate) {
+        queryBuilder.andWhere('transaction.date BETWEEN :startDate AND :endDate', {
+            startDate: new Date(startDate as string),
+            endDate: new Date(endDate as string)
+        });
+    } else if (startDate) {
+        queryBuilder.andWhere('transaction.date >= :startDate', { startDate: new Date(startDate as string) });
+    } else if (endDate) {
+        queryBuilder.andWhere('transaction.date <= :endDate', { endDate: new Date(endDate as string) });
+    }
+
+    if (minAmount && maxAmount) {
+        queryBuilder.andWhere('transaction.amount BETWEEN :minAmount AND :maxAmount', {
+            minAmount: Number(minAmount),
+            maxAmount: Number(maxAmount)
+        });
+    } else if (minAmount) {
+        queryBuilder.andWhere('transaction.amount >= :minAmount', { minAmount: Number(minAmount) });
+    } else if (maxAmount) {
+        queryBuilder.andWhere('transaction.amount <= :maxAmount', { maxAmount: Number(maxAmount) });
+    }
+
+    if (search) {
+        queryBuilder.andWhere('LOWER(transaction.note) LIKE LOWER(:search)', { search: `%${search}%` });
+    }
+
+    // Dynamic sorting
+    const validSortFields = ['date', 'amount', 'createdAt'];
+    const sortField = validSortFields.includes(sortBy as string) ? sortBy as string : 'date';
+    const order = (sortOrder as string)?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    queryBuilder.orderBy(`transaction.${sortField}`, order);
+
+    const transactions = await queryBuilder.getMany();
 
     res.json(transactions);
 }));

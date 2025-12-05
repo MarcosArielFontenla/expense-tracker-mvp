@@ -24,9 +24,66 @@
         </div>
     </div>
 
+    <!-- Search Bar -->
+    <div class="mb-4">
+        <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input type="text" 
+                   [(ngModel)]="searchQuery" 
+                   (input)="onSearchChange()"
+                   placeholder="Buscar por descripción o nota..." 
+                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all">
+            <button *ngIf="searchQuery" 
+                    (click)="searchQuery = ''; onSearchChange()" 
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                ✕
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="flex flex-wrap gap-2 mb-4">
+        <button (click)="setQuickFilter('all')" 
+                class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                [class.bg-primary-600]="quickFilter === 'all'"
+                [class.text-white]="quickFilter === 'all'"
+                [class.bg-gray-100]="quickFilter !== 'all'"
+                [class.text-gray-600]="quickFilter !== 'all'"
+                [class.hover:bg-gray-200]="quickFilter !== 'all'">
+            Todas
+        </button>
+        <button (click)="setQuickFilter('today')" 
+                class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                [class.bg-primary-600]="quickFilter === 'today'"
+                [class.text-white]="quickFilter === 'today'"
+                [class.bg-gray-100]="quickFilter !== 'today'"
+                [class.text-gray-600]="quickFilter !== 'today'"
+                [class.hover:bg-gray-200]="quickFilter !== 'today'">
+            📅 Hoy
+        </button>
+        <button (click)="setQuickFilter('week')" 
+                class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                [class.bg-primary-600]="quickFilter === 'week'"
+                [class.text-white]="quickFilter === 'week'"
+                [class.bg-gray-100]="quickFilter !== 'week'"
+                [class.text-gray-600]="quickFilter !== 'week'"
+                [class.hover:bg-gray-200]="quickFilter !== 'week'">
+            📆 Esta Semana
+        </button>
+        <button (click)="setQuickFilter('month')" 
+                class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                [class.bg-primary-600]="quickFilter === 'month'"
+                [class.text-white]="quickFilter === 'month'"
+                [class.bg-gray-100]="quickFilter !== 'month'"
+                [class.text-gray-600]="quickFilter !== 'month'"
+                [class.hover:bg-gray-200]="quickFilter !== 'month'">
+            🗓️ Este Mes
+        </button>
+    </div>
+
     <!-- Filters Bar -->
     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             <!-- Type Filter -->
             <div>
                 <label class="label">Tipo</label>
@@ -48,6 +105,18 @@
                 </select>
             </div>
 
+            <!-- Amount Range -->
+            <div>
+                <label class="label">Monto Mín</label>
+                <input type="number" [(ngModel)]="minAmount" (change)="onAmountFilterChange()" 
+                       placeholder="$0" class="input-field" min="0">
+            </div>
+            <div>
+                <label class="label">Monto Máx</label>
+                <input type="number" [(ngModel)]="maxAmount" (change)="onAmountFilterChange()" 
+                       placeholder="$∞" class="input-field" min="0">
+            </div>
+
             <!-- Date Range -->
             <div>
                 <label class="label">Desde</label>
@@ -57,13 +126,17 @@
                 <label class="label">Hasta</label>
                 <input type="date" [(ngModel)]="endDateStr" (change)="onFilterChange()" class="input-field">
             </div>
+        </div>
 
-            <!-- Clear Filters -->
-            <div class="flex items-end">
-                <button (click)="clearFilters()" class="btn btn-secondary w-full">
-                    Limpiar Filtros
-                </button>
-            </div>
+        <!-- Active Filters Info & Clear -->
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+            <p class="text-sm text-gray-500">
+                Mostrando <span class="font-semibold text-gray-700">{{ transactions.length }}</span> transacciones
+            </p>
+            <button *ngIf="hasActiveFilters()" (click)="clearFilters()" 
+                    class="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                ✕ Limpiar Filtros
+            </button>
         </div>
     </div>
 
@@ -79,9 +152,14 @@
         <div class="text-6xl mb-4">📝</div>
         <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay transacciones</h3>
         <p class="text-gray-600 mb-6">No se encontraron movimientos con los filtros actuales.</p>
-        <button (click)="onCreateTransaction()" class="btn btn-primary">
-            Registrar Movimiento
-        </button>
+        <div class="flex justify-center gap-3">
+            <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="btn btn-secondary">
+                Limpiar Filtros
+            </button>
+            <button (click)="onCreateTransaction()" class="btn btn-primary">
+                Registrar Movimiento
+            </button>
+        </div>
     </div>
 
     <!-- Transactions List (Desktop Table) -->
@@ -90,10 +168,18 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Fecha</th>
+                    <th class="cursor-pointer hover:bg-gray-100 select-none" (click)="toggleSort('date')">
+                        <div class="flex items-center gap-1">
+                            Fecha <span class="text-xs">{{ getSortIcon('date') }}</span>
+                        </div>
+                    </th>
                     <th>Categoría</th>
                     <th>Nota</th>
-                    <th class="text-right">Monto</th>
+                    <th class="text-right cursor-pointer hover:bg-gray-100 select-none" (click)="toggleSort('amount')">
+                        <div class="flex items-center justify-end gap-1">
+                            Monto <span class="text-xs">{{ getSortIcon('amount') }}</span>
+                        </div>
+                    </th>
                     <th class="text-right">Acciones</th>
                 </tr>
             </thead>
@@ -162,4 +248,5 @@
             </div>
         </div>
     </div>
+
 </div>
