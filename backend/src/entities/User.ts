@@ -35,6 +35,9 @@ export class User {
     @Column({ type: 'varchar', length: 3, default: 'USD' })
     currency!: string;
 
+    @Column({ type: 'varchar', length: 50, default: 'America/Argentina/Buenos_Aires' })
+    timezone!: string;
+
     @CreateDateColumn()
     createdAt!: Date;
 

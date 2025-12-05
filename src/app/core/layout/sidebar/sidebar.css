@@ -1,4 +1,66 @@
-/* Add any component-specific styles here */
+/* Sidebar Gradient Background - Cool Blue Theme */
+.sidebar-gradient {
+    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+    /* Alternative option - Darker Blue:
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    */
+    /* Alternative option - Cyan/Teal:
+    background: linear-gradient(180deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%);
+    */
+}
+
+/* Active menu item styling */
+.sidebar-active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white !important;
+    font-weight: 500;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar-gradient nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-gradient nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.sidebar-gradient nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.sidebar-gradient nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile safe area */
 .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hover effect enhancement */
+.sidebar-gradient nav a {
+    position: relative;
+}
+
+.sidebar-gradient nav a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: white;
+    border-radius: 0 3px 3px 0;
+    transition: height 0.2s ease;
+}
+
+.sidebar-gradient nav a.sidebar-active::before,
+.sidebar-gradient nav a:hover::before {
+    height: 60%;
 }
