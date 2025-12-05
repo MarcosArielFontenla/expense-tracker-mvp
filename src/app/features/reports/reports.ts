@@ -261,6 +261,67 @@ export class Reports implements OnInit {
     document.body.removeChild(link);
   }
 
+  public async exportToExcel(): Promise<void> {
+    if (this.transactions.length === 0) {
+      alert('No hay transacciones para exportar');
+      return;
+    }
+
+    try {
+      // Dynamically import xlsx
+      const XLSX = await import('xlsx');
+
+      // Create transactions data
+      const transactionsData = this.transactions.map(t => ({
+        'Fecha': new Date(t.date).toLocaleDateString('es-ES'),
+        'Categoría': this.getCategoryName(t.categoryId),
+        'Descripción': t.note || '-',
+        'Tipo': this.getTransactionTypeLabel(t.type),
+        'Monto': t.type === 'income' ? t.amount : -t.amount
+      }));
+
+      // Create transactions worksheet
+      const wsTransactions = XLSX.utils.json_to_sheet(transactionsData);
+
+      // Set column widths
+      wsTransactions['!cols'] = [
+        { wch: 12 },  // Fecha
+        { wch: 20 },  // Categoría
+        { wch: 35 },  // Descripción
+        { wch: 10 },  // Tipo
+        { wch: 15 }   // Monto
+      ];
+
+      // Create summary data
+      const summaryData = [
+        { 'Concepto': 'Total Ingresos', 'Valor': this.totalIncome },
+        { 'Concepto': 'Total Gastos', 'Valor': this.totalExpenses },
+        { 'Concepto': 'Balance', 'Valor': this.balance },
+        { 'Concepto': '', 'Valor': '' },
+        { 'Concepto': 'Período', 'Valor': this.getReportTypeLabel() },
+        { 'Concepto': 'Total Transacciones', 'Valor': this.transactions.length }
+      ];
+
+      // Create summary worksheet
+      const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+      wsSummary['!cols'] = [
+        { wch: 20 },
+        { wch: 15 }
+      ];
+
+      // Create workbook and add sheets
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, wsTransactions, 'Transacciones');
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+
+      // Download file
+      XLSX.writeFile(wb, `reporte_${this.getReportFileName()}.xlsx`);
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      alert('Error al generar el archivo Excel');
+    }
+  }
+
   public async exportToPDF(): Promise<void> {
     if (this.transactions.length === 0) {
       alert('No hay transacciones para exportar');
@@ -310,7 +371,8 @@ export class Reports implements OnInit {
       const limitedTransactions = this.transactions.slice(0, 30);
 
       for (const t of limitedTransactions) {
-        if (yPos > 280) break; // Page limit
+        if (yPos > 280)
+          break; // Page limit
 
         const date = new Date(t.date).toLocaleDateString('es-ES');
         const category = this.getCategoryName(t.categoryId).substring(0, 20);
