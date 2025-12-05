@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { Transaction } from '../entities/Transaction';
+import { Account } from '../entities/Account';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { validateRequest } from '../middleware/validateRequest';
@@ -13,7 +14,7 @@ const router = express.Router();
 
 // Get all transactions with optional filters
 router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { type, categoryId, startDate, endDate, search, minAmount, maxAmount, sortBy, sortOrder } = req.query;
+    const { type, categoryId, accountId, startDate, endDate, search, minAmount, maxAmount, sortBy, sortOrder } = req.query;
     const transactionRepository = AppDataSource.getRepository(Transaction);
 
     const where: any = { userId: req.userId };
@@ -135,19 +136,43 @@ router.get('/summary/:month/:year', authMiddleware, asyncHandler(async (req: Aut
 
 // Create transaction
 router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { type, amount, categoryId, date, note } = req.body;
+    const { type, amount, categoryId, accountId, date, note } = req.body;
 
     const transactionRepository = AppDataSource.getRepository(Transaction);
+    const accountRepository = AppDataSource.getRepository(Account);
+
+    // If no accountId provided, use default account
+    let finalAccountId = accountId;
+    if (!finalAccountId) {
+        const defaultAccount = await accountRepository.findOne({
+            where: { userId: req.userId, isDefault: true }
+        });
+        if (defaultAccount) {
+            finalAccountId = defaultAccount.id;
+        }
+    }
+
     const transaction = transactionRepository.create({
         type,
         amount,
         categoryId,
+        accountId: finalAccountId,
         date: new Date(date),
         note,
         userId: req.userId!
     });
 
     await transactionRepository.save(transaction);
+
+    // Update account balance
+    if (finalAccountId) {
+        const account = await accountRepository.findOne({ where: { id: finalAccountId } });
+        if (account) {
+            const balanceChange = type === 'income' ? Number(amount) : -Number(amount);
+            account.balance = Number(account.balance) + balanceChange;
+            await accountRepository.save(account);
+        }
+    }
 
     // Audit Log
     await AuditService.logAction(req.userId!, 'TRANSACTION_CREATE', req, transaction, transaction.id, 'Transaction');
@@ -185,12 +210,27 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
 // Delete transaction
 router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
     const transactionRepository = AppDataSource.getRepository(Transaction);
+    const accountRepository = AppDataSource.getRepository(Account);
+
     const transaction = await transactionRepository.findOne({
         where: { id: req.params.id, userId: req.userId }
     });
 
     if (!transaction) {
         throw new AppError('Transaction not found', 404);
+    }
+
+    // Revert account balance before deleting
+    if (transaction.accountId) {
+        const account = await accountRepository.findOne({ where: { id: transaction.accountId } });
+        if (account) {
+            // Reverse the original effect: income was added, expense was subtracted
+            const balanceRevert = transaction.type === 'income'
+                ? -Number(transaction.amount)
+                : Number(transaction.amount);
+            account.balance = Number(account.balance) + balanceRevert;
+            await accountRepository.save(account);
+        }
     }
 
     await transactionRepository.remove(transaction);

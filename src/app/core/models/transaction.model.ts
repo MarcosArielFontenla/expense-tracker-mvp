@@ -8,6 +8,7 @@ export interface Transaction {
     amount: number;
     categoryId: string;
     category?: Category;
+    accountId?: string;
     date: Date;
     note: string;
     createdAt: Date;
@@ -18,6 +19,7 @@ export interface TransactionDTO {
     type: TransactionType;
     amount: number;
     categoryId: string;
+    accountId?: string;
     date: Date;
     note: string;
 }
