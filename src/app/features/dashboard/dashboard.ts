@@ -5,6 +5,7 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { TransactionsService } from '../transactions/service/transactions.service';
 import { Transaction, MonthlySummary } from '../../core/models/transaction.model';
 import { AuthService } from '../../core/services/auth.service';
+import { OnboardingService } from '../../core/services/onboarding.service';
 
 Chart.register(...registerables);
 
@@ -30,6 +31,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   constructor(
     private transactionsService: TransactionsService,
     private authService: AuthService,
+    private onboardingService: OnboardingService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
@@ -47,6 +49,13 @@ export class Dashboard implements OnInit, AfterViewInit {
       this.transactionsService.refresh$.subscribe(() => {
         this.loadDashboardData();
       });
+
+      // Start onboarding for new users
+      setTimeout(() => {
+        if (this.onboardingService.shouldShowOnboarding()) {
+          this.onboardingService.startOnboarding();
+        }
+      }, 500);
     }
   }
 

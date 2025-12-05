@@ -1,0 +1,65 @@
+<div *ngIf="isActive" class="onboarding-overlay">
+    <!-- Dark overlay with spotlight cutout -->
+    <div class="overlay-backdrop"></div>
+    
+    <!-- Spotlight highlight -->
+    <div class="spotlight" 
+         [style.top.px]="spotlightRect.top"
+         [style.left.px]="spotlightRect.left"
+         [style.width.px]="spotlightRect.width"
+         [style.height.px]="spotlightRect.height">
+    </div>
+
+    <!-- Tooltip -->
+    <div class="onboarding-tooltip"
+         [style.top]="tooltipPosition.top"
+         [style.left]="tooltipPosition.left">
+        
+        <!-- Header -->
+        <div class="tooltip-header">
+            <h3 class="tooltip-title">{{ currentStep?.title }}</h3>
+            <button (click)="onSkip()" class="skip-btn" title="Saltar tutorial">✕</button>
+        </div>
+
+        <!-- Content -->
+        <p class="tooltip-message">{{ currentStep?.message }}</p>
+
+        <!-- Footer -->
+        <div class="tooltip-footer">
+            <!-- Progress -->
+            <div class="progress-indicator">
+                <span *ngFor="let step of onboardingService.steps; let i = index" 
+                      class="progress-dot"
+                      [class.active]="i === currentStepIndex"
+                      [class.completed]="i < currentStepIndex">
+                </span>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button *ngIf="!isFirstStep" 
+                        (click)="onPrevious()" 
+                        class="btn-secondary">
+                    ← Anterior
+                </button>
+                
+                <button *ngIf="!isLastStep" 
+                        (click)="onNext()" 
+                        class="btn-primary">
+                    Siguiente →
+                </button>
+                
+                <button *ngIf="isLastStep" 
+                        (click)="onComplete()" 
+                        class="btn-primary btn-complete">
+                    ¡Empezar! 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- Step counter -->
+        <div class="step-counter">
+            {{ currentStepIndex + 1 }} de {{ totalSteps }}
+        </div>
+    </div>
+</div>

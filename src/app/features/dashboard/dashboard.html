@@ -1,20 +1,20 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="dashboard-header flex justify-between items-center mb-8">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p class="mt-1 text-sm text-gray-600">
                 Resumen de tu actividad financiera
             </p>
         </div>
-        <button (click)="onNewTransaction()" class="btn btn-primary flex items-center gap-2">
+        <button (click)="onNewTransaction()" class="btn btn-primary btn-new-transaction flex items-center gap-2">
             <span class="text-xl">+</span>
             <span class="hidden sm:inline">Registrar Movimiento</span>
         </button>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="summary-cards grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <!-- Income Card -->
         <div class="card bg-gradient-to-br from-green-50 to-white border border-green-200">
             <div class="flex items-center justify-between mb-4">
