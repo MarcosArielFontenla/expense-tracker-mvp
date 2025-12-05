@@ -60,7 +60,7 @@ export class AuthService {
         return this.http.get(`${environment.apiUrl}/auth/profile`);
     }
 
-    public updateProfile(data: { name?: string; currency?: string }): Observable<any> {
+    public updateProfile(data: { name?: string; currency?: string; timezone?: string }): Observable<any> {
         return this.http.patch(`${environment.apiUrl}/auth/profile`, data)
             .pipe(tap(user => {
                 if (this.isBrowser) {
