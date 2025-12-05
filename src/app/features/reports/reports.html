@@ -103,10 +103,13 @@
     <!-- Export Actions -->
     <div *ngIf="!isLoading && transactions.length > 0" class="export-actions">
         <button (click)="exportToCSV()" class="export-btn csv-btn">
-            📊 Exportar CSV
+            📊 CSV
+        </button>
+        <button (click)="exportToExcel()" class="export-btn excel-btn">
+            📗 Excel
         </button>
         <button (click)="exportToPDF()" class="export-btn pdf-btn">
-            📄 Exportar PDF
+            📄 PDF
         </button>
         <button (click)="printReport()" class="export-btn print-btn">
             🖨️ Imprimir

@@ -559,6 +559,15 @@
     background: #dc2626;
   }
 
+  .excel-btn {
+    background: #217346;
+    color: white;
+  }
+
+  .excel-btn:hover {
+    background: #1d5f3a;
+  }
+
   .print-btn {
     background: #6b7280;
     color: white;
