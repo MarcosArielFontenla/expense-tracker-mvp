@@ -27,6 +27,11 @@ export interface TransactionFilter {
     endDate?: Date;
     categoryId?: string;
     type?: TransactionType;
+    search?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    sortBy?: 'date' | 'amount' | 'createdAt';
+    sortOrder?: 'asc' | 'desc';
 }
 
 export interface MonthlySummary {
