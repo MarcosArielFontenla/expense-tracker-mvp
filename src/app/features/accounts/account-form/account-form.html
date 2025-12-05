@@ -1,0 +1,118 @@
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {{ isEditMode ? 'Editar Cuenta' : 'Nueva Cuenta' }}
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+            {{ isEditMode ? 'Modifica los datos de tu cuenta' : 'Crea una nueva cuenta para organizar tus finanzas' }}
+        </p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <p class="mt-4 text-gray-600">Cargando...</p>
+    </div>
+
+    <!-- Form -->
+    <form *ngIf="!isLoading" (ngSubmit)="onSubmit()" class="card">
+        <!-- Error Message -->
+        <div *ngIf="error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {{ error }}
+        </div>
+
+        <!-- Name -->
+        <div class="mb-6">
+            <label class="label">Nombre de la Cuenta *</label>
+            <input type="text" [(ngModel)]="name" name="name" class="input-field"
+                placeholder="Ej: Banco Nación, Billetera, etc." required>
+        </div>
+
+        <!-- Type -->
+        <div class="mb-6">
+            <label class="label">Tipo de Cuenta</label>
+            <select [(ngModel)]="type" name="type" (change)="onTypeChange()" class="input-field">
+                <option *ngFor="let t of accountTypes" [value]="t.value">{{ t.label }}</option>
+            </select>
+        </div>
+
+        <!-- Balance -->
+        <div class="mb-6">
+            <label class="label">Balance Inicial</label>
+            <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input type="number" [(ngModel)]="balance" name="balance" class="input-field pl-8" placeholder="0"
+                    step="0.01">
+            </div>
+            <p class="mt-1 text-xs text-gray-500">
+                Para tarjetas de crédito, ingresa el saldo negativo si tienes deuda
+            </p>
+        </div>
+
+        <!-- Color & Icon -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <!-- Color -->
+            <div>
+                <label class="label">Color</label>
+                <div class="flex flex-wrap gap-2">
+                    <button *ngFor="let c of colors" type="button" (click)="color = c"
+                        class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+                        [style.background-color]="c" [class.ring-2]="color === c" [class.ring-offset-2]="color === c"
+                        [class.ring-gray-400]="color === c">
+                    </button>
+                </div>
+            </div>
+
+            <!-- Icon -->
+            <div>
+                <label class="label">Icono</label>
+                <div class="flex flex-wrap gap-2">
+                    <button *ngFor="let i of icons" type="button" (click)="icon = i"
+                        class="w-10 h-10 rounded-lg border-2 text-xl flex items-center justify-center transition-transform hover:scale-110"
+                        [class.border-primary-500]="icon === i" [class.bg-primary-50]="icon === i"
+                        [class.border-gray-200]="icon !== i">
+                        {{ i }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-500 mb-2">Vista previa</p>
+            <div class="flex items-center gap-3">
+                <div class="h-12 w-12 rounded-full flex items-center justify-center text-2xl"
+                    [style.background-color]="color + '20'">
+                    {{ icon }}
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-900">{{ name || 'Nombre de cuenta' }}</p>
+                    <p class="text-sm text-gray-500">{{ getTypeLabel(type) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Default Account -->
+        <div class="mb-6">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="isDefault" name="isDefault"
+                    class="w-5 h-5 text-primary-600 rounded border-gray-300 focus:ring-primary-500">
+                <span class="text-gray-700">Establecer como cuenta principal</span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 ml-8">
+                Las nuevas transacciones usarán esta cuenta por defecto
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-4 pt-6 border-t border-gray-100">
+            <button type="button" (click)="onCancel()" class="btn btn-secondary">
+                Cancelar
+            </button>
+            <button type="submit" [disabled]="isSaving" class="btn btn-primary">
+                {{ isSaving ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Cuenta') }}
+            </button>
+        </div>
+    </form>
+</div>

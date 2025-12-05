@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { User } from './User';
 import { Category } from './Category';
+import { Account } from './Account';
 
 @Entity('transactions')
 export class Transaction {
@@ -20,6 +21,13 @@ export class Transaction {
     @ManyToOne(() => Category)
     @JoinColumn({ name: 'categoryId' })
     category!: Category;
+
+    @Column({ type: 'uuid', nullable: true })
+    accountId?: string;
+
+    @ManyToOne(() => Account)
+    @JoinColumn({ name: 'accountId' })
+    account?: Account;
 
     @Column({ type: 'decimal', precision: 18, scale: 2 })
     amount!: number;

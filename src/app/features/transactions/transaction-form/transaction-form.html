@@ -93,6 +93,20 @@
             </p>
         </div>
 
+        <!-- Account -->
+        <div *ngIf="accounts.length > 0">
+            <label for="accountId" class="label">Cuenta</label>
+            <select id="accountId" formControlName="accountId" class="input-field">
+                <option value="">Cuenta por defecto</option>
+                <option *ngFor="let acc of accounts" [value]="acc.id">
+                    {{ acc.icon }} {{ acc.name }}
+                </option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500">
+                Se descontará/sumará de la cuenta seleccionada
+            </p>
+        </div>
+
         <!-- Note -->
         <div>
             <label for="note" class="label">Nota (Opcional)</label>

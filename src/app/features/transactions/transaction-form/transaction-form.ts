@@ -4,7 +4,9 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { TransactionsService } from '../service/transactions.service';
 import { CategoriesService } from '../../categories/services/categories.service';
+import { AccountsService } from '../../accounts/service/accounts.service';
 import { Category } from '../../../core/models/category.model';
+import { Account } from '../../../core/models/account.model';
 import { TransactionDTO } from '../../../core/models/transaction.model';
 
 @Component({
@@ -23,17 +25,20 @@ export class TransactionForm implements OnInit {
 
   categories: Category[] = [];
   filteredCategories: Category[] = [];
+  accounts: Account[] = [];
 
   constructor(
     private fb: FormBuilder,
     private transactionsService: TransactionsService,
     private categoriesService: CategoriesService,
+    private accountsService: AccountsService,
     private router: Router,
     private route: ActivatedRoute) { }
 
   public ngOnInit(): void {
     this.initializeForm();
     this.loadCategories();
+    this.loadAccounts();
   }
 
   public initializeForm(): void {
@@ -43,6 +48,7 @@ export class TransactionForm implements OnInit {
       type: ['expense', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       categoryId: ['', Validators.required],
+      accountId: [''],
       date: [today, Validators.required],
       note: ['', [Validators.maxLength(100)]]
     });
@@ -66,6 +72,20 @@ export class TransactionForm implements OnInit {
     });
   }
 
+  public loadAccounts(): void {
+    this.accountsService.getAccounts().subscribe({
+      next: (accounts) => {
+        this.accounts = accounts;
+        // Set default account
+        const defaultAccount = accounts.find(a => a.isDefault);
+        if (defaultAccount && !this.isEditMode) {
+          this.transactionForm.patchValue({ accountId: defaultAccount.id });
+        }
+      },
+      error: (err) => console.error('Error loading accounts', err)
+    });
+  }
+
   public filterCategories(type: 'expense' | 'income'): void {
     this.filteredCategories = this.categories.filter(c => c.type === type);
   }
@@ -84,6 +104,7 @@ export class TransactionForm implements OnInit {
               type: transaction.type,
               amount: transaction.amount,
               categoryId: transaction.categoryId,
+              accountId: transaction.accountId || '',
               date: dateStr,
               note: transaction.note
             });
@@ -111,11 +132,17 @@ export class TransactionForm implements OnInit {
     this.error = null;
 
     const formValue = this.transactionForm.value;
+
+    // Parse date at noon to avoid timezone day-shift issues
+    const [year, month, day] = formValue.date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day, 12, 0, 0);
+
     const transactionDTO: TransactionDTO = {
       type: formValue.type,
       amount: Number(formValue.amount),
       categoryId: formValue.categoryId,
-      date: new Date(formValue.date),
+      accountId: formValue.accountId || undefined,
+      date: localDate,
       note: formValue.note
     };
 
@@ -149,6 +176,10 @@ export class TransactionForm implements OnInit {
 
   public get categoryId() {
     return this.transactionForm.get('categoryId');
+  }
+
+  public get accountId() {
+    return this.transactionForm.get('accountId');
   }
 
   public get date() {

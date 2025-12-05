@@ -14,6 +14,7 @@ export class Sidebar {
     menuItems = [
         { icon: '📊', label: 'Dashboard', path: '/dashboard' },
         { icon: '💸', label: 'Transacciones', path: '/transactions' },
+        { icon: '💳', label: 'Cuentas', path: '/accounts' },
         { icon: '🏷️', label: 'Categorías', path: '/categories' },
         { icon: '💰', label: 'Presupuestos', path: '/budgets' },
         { icon: '📈', label: 'Reportes', path: '/reports' },
