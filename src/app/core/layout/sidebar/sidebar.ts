@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -20,13 +20,32 @@ export class Sidebar {
         { icon: '⚙️', label: 'Configuración', path: '/settings' }
     ];
 
+    isDropdownOpen = false;
+
     private authService = inject(AuthService);
     private router = inject(Router);
     currentUser$ = this.authService.currentUser$;
 
     constructor() { }
 
+    public toggleDropdown(): void {
+        this.isDropdownOpen = !this.isDropdownOpen;
+    }
+
+    public closeDropdown(): void {
+        this.isDropdownOpen = false;
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.user-menu-container')) {
+            this.isDropdownOpen = false;
+        }
+    }
+
     public onLogout(): void {
+        this.isDropdownOpen = false;
         this.authService.logout().subscribe({
             next: () => {
                 // Navigation handled in AuthService
