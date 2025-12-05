@@ -8,6 +8,7 @@ import categoriesRoutes from './routes/categories';
 import transactionsRoutes from './routes/transactions';
 import budgetsRoutes from './routes/budgets';
 import reportsRoutes from './routes/reports.routes';
+import accountsRoutes from './routes/accounts';
 import { globalLimiter } from './middleware/rateLimit.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { AppError } from './utils/AppError';
@@ -28,6 +29,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/budgets', budgetsRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/accounts', accountsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

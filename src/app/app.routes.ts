@@ -6,6 +6,8 @@ import { TransactionsList } from './features/transactions/transactions-list/tran
 import { TransactionForm } from './features/transactions/transaction-form/transaction-form';
 import { BudgetList } from './features/budgets/budget-list/budget-list';
 import { BudgetForm } from './features/budgets/budget-form/budget-form';
+import { AccountsList } from './features/accounts/accounts-list/accounts-list';
+import { AccountForm } from './features/accounts/account-form/account-form';
 import { Reports } from './features/reports/reports';
 import { Layout } from './core/layout/layout';
 import { NotFound } from './core/pages/not-found/not-found';
@@ -87,6 +89,20 @@ export const routes: Routes = [
             {
                 path: 'transactions/edit/:id',
                 component: TransactionForm
+            },
+
+            // Accounts routes
+            {
+                path: 'accounts',
+                component: AccountsList
+            },
+            {
+                path: 'accounts/new',
+                component: AccountForm
+            },
+            {
+                path: 'accounts/edit/:id',
+                component: AccountForm
             },
 
             // Budgets routes
