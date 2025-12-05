@@ -14,6 +14,29 @@ const SUPPORTED_CURRENCIES = [
     'UYU'  // Uruguayan Peso
 ];
 
+// List of supported timezones (IANA timezone identifiers)
+const SUPPORTED_TIMEZONES = [
+    'America/Argentina/Buenos_Aires',
+    'America/New_York',
+    'America/Los_Angeles',
+    'America/Chicago',
+    'America/Denver',
+    'America/Mexico_City',
+    'America/Santiago',
+    'America/Sao_Paulo',
+    'America/Lima',
+    'America/Bogota',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Madrid',
+    'Europe/Berlin',
+    'Asia/Tokyo',
+    'Asia/Shanghai',
+    'Asia/Dubai',
+    'Australia/Sydney',
+    'UTC'
+];
+
 export const updateProfileValidation = [
     body('name')
         .optional()
@@ -23,7 +46,11 @@ export const updateProfileValidation = [
     body('currency')
         .optional()
         .isIn(SUPPORTED_CURRENCIES)
-        .withMessage(`Currency must be one of: ${SUPPORTED_CURRENCIES.join(', ')}`)
+        .withMessage(`Currency must be one of: ${SUPPORTED_CURRENCIES.join(', ')}`),
+    body('timezone')
+        .optional()
+        .isIn(SUPPORTED_TIMEZONES)
+        .withMessage('Invalid timezone')
 ];
 
-export { SUPPORTED_CURRENCIES };
+export { SUPPORTED_CURRENCIES, SUPPORTED_TIMEZONES };

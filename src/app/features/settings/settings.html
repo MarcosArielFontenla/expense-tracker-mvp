@@ -9,7 +9,7 @@
 
     <!-- Settings Form -->
     <div class="card">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">Preferencias de Moneda</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Preferencias</h2>
 
         <div class="space-y-6">
             <!-- Currency Selector -->
@@ -25,18 +25,31 @@
                 </p>
             </div>
 
+            <!-- Timezone Selector -->
+            <div>
+                <label for="timezone" class="label">Zona Horaria</label>
+                <select id="timezone" [(ngModel)]="selectedTimezone" (ngModelChange)="onTimezoneChange()" class="input-field">
+                    <option *ngFor="let tz of timezones" [value]="tz.value">
+                        {{ tz.label }} - {{ tz.region }}
+                    </option>
+                </select>
+                <p class="mt-2 text-sm text-gray-500">
+                    Hora actual en tu zona: <span class="font-medium text-gray-700">{{ currentTimeInZone }}</span>
+                </p>
+            </div>
+
             <!-- Preview -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="text-sm font-medium text-gray-700 mb-2">Vista Previa</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs text-gray-500">Ingreso</p>
+                        <p class="text-xs text-gray-500">Moneda - Ingreso</p>
                         <p class="text-lg font-bold text-green-600">
                             {{ 1000 | currency:selectedCurrency:'symbol':'1.0-0' }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Gasto</p>
+                        <p class="text-xs text-gray-500">Moneda - Gasto</p>
                         <p class="text-lg font-bold text-red-600">
                             -{{ 500 | currency:selectedCurrency:'symbol':'1.0-0' }}
                         </p>

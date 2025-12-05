@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -21,10 +21,36 @@ export class Register {
         private authService: AuthService,
         private router: Router) {
         this.registerForm = this.fb.group({
-            name: ['', [Validators.required]],
+            name: ['', [Validators.required, Validators.minLength(3)]],
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]]
+            password: ['', [Validators.required, Validators.minLength(6)]],
+            confirmPassword: ['', [Validators.required]]
+        }, {
+            validators: this.passwordMatchValidator
         });
+    }
+
+    // Custom validator to check if passwords match
+    passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+        const password = control.get('password');
+        const confirmPassword = control.get('confirmPassword');
+
+        if (!password || !confirmPassword) {
+            return null;
+        }
+
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setErrors({ passwordMismatch: true });
+            return { passwordMismatch: true };
+        } else {
+            const errors = confirmPassword.errors;
+
+            if (errors) {
+                delete errors['passwordMismatch'];
+                confirmPassword.setErrors(Object.keys(errors).length > 0 ? errors : null);
+            }
+        }
+        return null;
     }
 
     onSubmit(): void {
@@ -34,7 +60,10 @@ export class Register {
         this.isSubmitting = true;
         this.error = '';
 
-        this.authService.register(this.registerForm.value).subscribe({
+        // Extract form values without confirmPassword for the API
+        const { confirmPassword, ...registerData } = this.registerForm.value;
+
+        this.authService.register(registerData).subscribe({
             next: (response: any) => {
                 this.router.navigate(['/verify-email-pending'], {
                     state: { email: this.registerForm.value.email }

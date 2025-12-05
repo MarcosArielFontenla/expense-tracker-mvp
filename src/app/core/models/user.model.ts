@@ -3,6 +3,7 @@ export interface User {
     email: string;
     name: string;
     currency: string;
+    timezone: string;
     emailVerified?: boolean;
     createdAt: Date;
 }
@@ -17,6 +18,7 @@ export interface RegisterRequest {
     password: string;
     name: string;
     currency?: string;
+    timezone?: string;
 }
 
 export interface AuthResponse {
@@ -27,4 +29,5 @@ export interface AuthResponse {
 export interface UpdateProfileRequest {
     name?: string;
     currency?: string;
+    timezone?: string;
 }

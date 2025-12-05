@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CurrencyService, CurrencyInfo } from '../../core/services/currency.service';
+import { TimezoneService, TimezoneInfo } from '../../core/services/timezone.service';
 
 @Component({
   selector: 'app-settings',
@@ -14,27 +15,47 @@ import { CurrencyService, CurrencyInfo } from '../../core/services/currency.serv
 })
 export class Settings implements OnInit {
   currencies: CurrencyInfo[] = [];
+  timezones: TimezoneInfo[] = [];
   selectedCurrency: string = 'USD';
+  selectedTimezone: string = 'America/Argentina/Buenos_Aires';
   userName: string = '';
   isSaving: boolean = false;
   saveSuccess: boolean = false;
   saveError: string | null = null;
+  currentTimeInZone: string = '';
 
   constructor(
     private authService: AuthService,
     private currencyService: CurrencyService,
+    private timezoneService: TimezoneService,
     private router: Router) { }
 
   ngOnInit(): void {
     this.currencies = this.currencyService.getSupportedCurrencies();
+    this.timezones = this.timezoneService.getSupportedTimezones();
 
     // Load user data
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.selectedCurrency = user.currency || 'USD';
+        this.selectedTimezone = user.timezone || 'America/Argentina/Buenos_Aires';
         this.userName = user.name || '';
+        this.updateCurrentTime();
       }
     });
+
+    // Update time every second
+    setInterval(() => {
+      this.updateCurrentTime();
+    }, 1000);
+  }
+
+  public updateCurrentTime(): void {
+    this.currentTimeInZone = this.timezoneService.getCurrentTimeInTimezone(this.selectedTimezone);
+  }
+
+  public onTimezoneChange(): void {
+    this.updateCurrentTime();
   }
 
   public onSave(): void {
@@ -43,7 +64,8 @@ export class Settings implements OnInit {
     this.saveSuccess = false;
 
     this.authService.updateProfile({
-      currency: this.selectedCurrency
+      currency: this.selectedCurrency,
+      timezone: this.selectedTimezone
     }).subscribe({
       next: () => {
         this.isSaving = false;

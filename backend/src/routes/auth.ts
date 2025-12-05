@@ -105,7 +105,9 @@ router.post('/login', loginValidation, validateRequest, asyncHandler(async (req:
         user: {
             id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            currency: user.currency,
+            timezone: user.timezone
         }
     });
 }));
@@ -315,6 +317,7 @@ router.get('/profile', asyncHandler(async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         currency: user.currency,
+        timezone: user.timezone,
         emailVerified: user.emailVerified,
         createdAt: user.createdAt
     });
