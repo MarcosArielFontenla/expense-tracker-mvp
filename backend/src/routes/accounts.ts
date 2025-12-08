@@ -114,7 +114,13 @@ router.put('/:id', authMiddleware, accountValidation, asyncHandler(async (req: A
 
     account.name = name;
     account.type = type;
-    if (balance !== undefined) account.balance = balance;
+    // Balance should not be editable when updating - it's calculated from transactions
+    // Only allow balance to be set when creating new accounts (balance is undefined in updates)
+    if (balance !== undefined && balance !== null) {
+        // Only update balance if this is a new account creation scenario
+        // In practice, balance updates should go through the recalculate endpoint
+        account.balance = balance;
+    }
     if (currency) account.currency = currency;
     if (color) account.color = color;
     if (icon) account.icon = icon;

@@ -110,7 +110,8 @@ export class AccountForm implements OnInit {
         const accountData: AccountDTO = {
             name: this.name.trim(),
             type: this.type,
-            balance: this.balance,
+            // Only include balance when creating new account, not when updating
+            balance: this.isEditMode ? undefined : this.balance,
             currency: this.currency,
             color: this.color,
             icon: this.icon,
