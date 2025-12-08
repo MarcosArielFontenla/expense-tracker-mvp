@@ -57,6 +57,10 @@ router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Respo
         queryBuilder.andWhere('transaction.categoryId = :categoryId', { categoryId });
     }
 
+    if (accountId) {
+        queryBuilder.andWhere('transaction.accountId = :accountId', { accountId });
+    }
+
     if (startDate && endDate) {
         queryBuilder.andWhere('transaction.date BETWEEN :startDate AND :endDate', {
             startDate: new Date(startDate as string),
@@ -182,8 +186,9 @@ router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHa
 
 // Update transaction
 router.put('/:id', authMiddleware, transactionValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { type, amount, categoryId, date, note } = req.body;
+    const { type, amount, categoryId, accountId, date, note } = req.body;
     const transactionRepository = AppDataSource.getRepository(Transaction);
+    const accountRepository = AppDataSource.getRepository(Account);
 
     const transaction = await transactionRepository.findOne({
         where: { id: req.params.id, userId: req.userId }
@@ -193,9 +198,52 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
         throw new AppError('Transaction not found', 404);
     }
 
-    transaction.type = type || transaction.type;
-    transaction.amount = amount || transaction.amount;
-    transaction.categoryId = categoryId || transaction.categoryId;
+    // Store original values for balance recalculation
+    const originalAccountId = transaction.accountId;
+    const originalAmount = Number(transaction.amount);
+    const originalType = transaction.type;
+    const newAmount = amount !== undefined ? Number(amount) : originalAmount;
+    const newType = type || originalType;
+    const newAccountId = accountId !== undefined ? accountId : originalAccountId;
+
+    // Determine final accountId (use default if not provided)
+    let finalAccountId = newAccountId;
+    if (!finalAccountId) {
+        const defaultAccount = await accountRepository.findOne({
+            where: { userId: req.userId, isDefault: true }
+        });
+        if (defaultAccount) {
+            finalAccountId = defaultAccount.id;
+        }
+    }
+
+    // Revert balance from original account
+    if (originalAccountId) {
+        const originalAccount = await accountRepository.findOne({ where: { id: originalAccountId } });
+        if (originalAccount) {
+            const originalBalanceChange = originalType === 'income'
+                ? -Number(originalAmount)
+                : Number(originalAmount);
+            originalAccount.balance = Number(originalAccount.balance) + originalBalanceChange;
+            await accountRepository.save(originalAccount);
+        }
+    }
+
+    // Apply new balance to new account
+    if (finalAccountId) {
+        const newAccount = await accountRepository.findOne({ where: { id: finalAccountId } });
+        if (newAccount) {
+            const newBalanceChange = newType === 'income' ? Number(newAmount) : -Number(newAmount);
+            newAccount.balance = Number(newAccount.balance) + newBalanceChange;
+            await accountRepository.save(newAccount);
+        }
+    }
+
+    // Update transaction
+    transaction.type = newType;
+    transaction.amount = newAmount;
+    transaction.categoryId = categoryId !== undefined ? categoryId : transaction.categoryId;
+    transaction.accountId = finalAccountId;
     transaction.date = date ? new Date(date) : transaction.date;
     transaction.note = note !== undefined ? note : transaction.note;
 
