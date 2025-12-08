@@ -6,6 +6,7 @@ import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
 import { body, validationResult } from 'express-validator';
+import { Not } from 'typeorm';
 
 const router = express.Router();
 
@@ -166,8 +167,14 @@ router.patch('/:id/archive', authMiddleware, asyncHandler(async (req: AuthReques
     // If archiving default account, set another as default
     if (account.isArchived && account.isDefault) {
         account.isDefault = false;
+        // Exclude the current account from the query to avoid selecting it
+        // (since it hasn't been saved yet, it still has isArchived: false in DB)
         const anotherAccount = await accountRepository.findOne({
-            where: { userId: req.userId, isArchived: false }
+            where: { 
+                userId: req.userId, 
+                isArchived: false,
+                id: Not(account.id)
+            }
         });
         if (anotherAccount) {
             anotherAccount.isDefault = true;

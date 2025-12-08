@@ -1,24 +1,6 @@
-/* Dashboard-specific responsive styles */
-
-/* Summary card amounts - responsive sizing to prevent overflow on tablets */
-@media (min-width: 768px) and (max-width: 1023px) {
-
-    /* Tablets: reduce font size to prevent overflow with large numbers */
-    .card .text-3xl {
-        font-size: 1.25rem;
-        /* text-xl: 20px */
-        line-height: 1.75rem;
-    }
-}
-
 @media (min-width: 1024px) and (max-width: 1279px) {
-
-    /* Small desktop: medium size */
     .card .text-3xl {
         font-size: 1.5rem;
-        /* text-2xl: 24px */
         line-height: 2rem;
     }
 }
-
-/* Larger screens (1280px+) keep text-3xl (30px) */
