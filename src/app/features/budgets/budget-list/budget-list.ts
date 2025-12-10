@@ -7,6 +7,7 @@ import { CategoriesService } from '../../categories/services/categories.service'
 import { BudgetStatus } from '../../../core/models/budget.model';
 import { Category } from '../../../core/models/category.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
     selector: 'app-budget-list',
@@ -44,6 +45,7 @@ export class BudgetList implements OnInit {
         private budgetService: BudgetService,
         private categoriesService: CategoriesService,
         private authService: AuthService,
+        private alertService: AlertService,
         @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         this.selectedMonth = today.getMonth() + 1;
@@ -101,10 +103,19 @@ export class BudgetList implements OnInit {
     }
 
     public deleteBudget(id: string): void {
-        if (confirm('¿Estás seguro de eliminar este presupuesto?')) {
-            this.budgetService.deleteBudget(id).subscribe(() => {
-                this.loadBudgets();
-            });
-        }
+        this.alertService.confirmDelete('este presupuesto').then((confirmed) => {
+            if (confirmed) {
+                this.budgetService.deleteBudget(id).subscribe({
+                    next: () => {
+                        this.alertService.success('Presupuesto eliminado correctamente');
+                        this.loadBudgets();
+                    },
+                    error: (err) => {
+                        this.alertService.error('Error al eliminar el presupuesto');
+                        console.error(err);
+                    }
+                });
+            }
+        });
     }
 }

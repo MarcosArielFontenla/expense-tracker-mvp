@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AccountsService } from '../service/accounts.service';
 import { Account, AccountDTO, AccountType, ACCOUNT_TYPE_LABELS, ACCOUNT_TYPE_ICONS, ACCOUNT_COLORS } from '../../../core/models/account.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
     selector: 'app-account-form',
@@ -48,6 +49,7 @@ export class AccountForm implements OnInit {
         private authService: AuthService,
         private router: Router,
         private route: ActivatedRoute,
+        private alertService: AlertService,
         @Inject(PLATFORM_ID) private platformId: Object) { }
 
     public ngOnInit(): void {
@@ -110,7 +112,8 @@ export class AccountForm implements OnInit {
         const accountData: AccountDTO = {
             name: this.name.trim(),
             type: this.type,
-            balance: this.balance,
+            // Only include balance when creating new account, not when updating
+            balance: this.isEditMode ? undefined : this.balance,
             currency: this.currency,
             color: this.color,
             icon: this.icon,
@@ -123,10 +126,19 @@ export class AccountForm implements OnInit {
 
         request.subscribe({
             next: () => {
-                this.router.navigate(['/accounts']);
+                this.alertService.success(
+                    this.isEditMode ? 'Cuenta actualizada correctamente' : 'Cuenta creada correctamente',
+                    '¡Éxito!'
+                );
+                setTimeout(() => {
+                    this.router.navigate(['/accounts']);
+                }, 1500);
             },
             error: (err) => {
-                this.error = 'Error al guardar cuenta';
+                this.alertService.error(
+                    err.error?.message || 'Error al guardar cuenta',
+                    'Error'
+                );
                 this.isSaving = false;
                 console.error(err);
             }

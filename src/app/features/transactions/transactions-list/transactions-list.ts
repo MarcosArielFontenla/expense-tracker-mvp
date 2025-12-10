@@ -7,6 +7,7 @@ import { CategoriesService } from '../../categories/services/categories.service'
 import { Transaction, TransactionFilter } from '../../../core/models/transaction.model';
 import { Category } from '../../../core/models/category.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertService } from '../../../core/services/alert.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -51,6 +52,7 @@ export class TransactionsList implements OnInit {
     private categoriesService: CategoriesService,
     private authService: AuthService,
     private router: Router,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object) { }
 
   public ngOnInit(): void {
@@ -235,11 +237,22 @@ export class TransactionsList implements OnInit {
   }
 
   public onDeleteTransaction(transaction: Transaction): void {
-    if (confirm(`¿Eliminar transacción de ${transaction.amount}?`)) {
-      this.transactionsService.deleteTransaction(transaction.id).subscribe({
-        error: (err) => console.error(err)
-      });
-    }
+    this.alertService.confirmDelete(
+      `transacción de ${this.userCurrency} ${transaction.amount}`,
+      ''
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.transactionsService.deleteTransaction(transaction.id).subscribe({
+          next: () => {
+            this.alertService.success('Transacción eliminada correctamente');
+          },
+          error: (err) => {
+            this.alertService.error('Error al eliminar la transacción');
+            console.error(err);
+          }
+        });
+      }
+    });
   }
 
   public getTotalAmount(): number {

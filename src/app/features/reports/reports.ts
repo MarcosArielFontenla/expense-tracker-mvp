@@ -6,6 +6,7 @@ import { CategoriesService } from '../categories/services/categories.service';
 import { Category } from '../../core/models/category.model';
 import { Transaction } from '../../core/models/transaction.model';
 import { AuthService } from '../../core/services/auth.service';
+import { AlertService } from '../../core/services/alert.service';
 
 type ReportType = 'monthly' | 'custom' | 'category';
 
@@ -60,6 +61,7 @@ export class Reports implements OnInit {
     private reportsService: ReportsService,
     private categoriesService: CategoriesService,
     private authService: AuthService,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object) {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -217,7 +219,7 @@ export class Reports implements OnInit {
   // Export Functions
   public exportToCSV(): void {
     if (this.transactions.length === 0) {
-      alert('No hay transacciones para exportar');
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
       return;
     }
 
@@ -263,7 +265,7 @@ export class Reports implements OnInit {
 
   public async exportToExcel(): Promise<void> {
     if (this.transactions.length === 0) {
-      alert('No hay transacciones para exportar');
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
       return;
     }
 
@@ -316,15 +318,16 @@ export class Reports implements OnInit {
 
       // Download file
       XLSX.writeFile(wb, `reporte_${this.getReportFileName()}.xlsx`);
+      this.alertService.success('Archivo Excel generado correctamente');
     } catch (error) {
       console.error('Error generating Excel:', error);
-      alert('Error al generar el archivo Excel');
+      this.alertService.error('Error al generar el archivo Excel', 'Error de exportación');
     }
   }
 
   public async exportToPDF(): Promise<void> {
     if (this.transactions.length === 0) {
-      alert('No hay transacciones para exportar');
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
       return;
     }
 
@@ -392,9 +395,10 @@ export class Reports implements OnInit {
 
       // Save PDF
       doc.save(`reporte_${this.getReportFileName()}.pdf`);
+      this.alertService.success('Archivo PDF generado correctamente');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error al generar el PDF');
+      this.alertService.error('Error al generar el PDF', 'Error de exportación');
     }
   }
 

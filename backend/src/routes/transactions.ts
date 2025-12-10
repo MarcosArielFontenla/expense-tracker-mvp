@@ -168,14 +168,17 @@ router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHa
 
     await transactionRepository.save(transaction);
 
-    // Update account balance
+    // Update account balance - validate account belongs to user
     if (finalAccountId) {
-        const account = await accountRepository.findOne({ where: { id: finalAccountId } });
-        if (account) {
-            const balanceChange = type === 'income' ? Number(amount) : -Number(amount);
-            account.balance = Number(account.balance) + balanceChange;
-            await accountRepository.save(account);
+        const account = await accountRepository.findOne({ 
+            where: { id: finalAccountId, userId: req.userId } 
+        });
+        if (!account) {
+            throw new AppError('Account not found or does not belong to user', 403);
         }
+        const balanceChange = type === 'income' ? Number(amount) : -Number(amount);
+        account.balance = Number(account.balance) + balanceChange;
+        await accountRepository.save(account);
     }
 
     // Audit Log
@@ -217,26 +220,32 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
         }
     }
 
-    // Revert balance from original account
+    // Revert balance from original account - validate account belongs to user
     if (originalAccountId) {
-        const originalAccount = await accountRepository.findOne({ where: { id: originalAccountId } });
-        if (originalAccount) {
-            const originalBalanceChange = originalType === 'income'
-                ? -Number(originalAmount)
-                : Number(originalAmount);
-            originalAccount.balance = Number(originalAccount.balance) + originalBalanceChange;
-            await accountRepository.save(originalAccount);
+        const originalAccount = await accountRepository.findOne({ 
+            where: { id: originalAccountId, userId: req.userId } 
+        });
+        if (!originalAccount) {
+            throw new AppError('Original account not found or does not belong to user', 403);
         }
+        const originalBalanceChange = originalType === 'income'
+            ? -Number(originalAmount)
+            : Number(originalAmount);
+        originalAccount.balance = Number(originalAccount.balance) + originalBalanceChange;
+        await accountRepository.save(originalAccount);
     }
 
-    // Apply new balance to new account
+    // Apply new balance to new account - validate account belongs to user
     if (finalAccountId) {
-        const newAccount = await accountRepository.findOne({ where: { id: finalAccountId } });
-        if (newAccount) {
-            const newBalanceChange = newType === 'income' ? Number(newAmount) : -Number(newAmount);
-            newAccount.balance = Number(newAccount.balance) + newBalanceChange;
-            await accountRepository.save(newAccount);
+        const newAccount = await accountRepository.findOne({ 
+            where: { id: finalAccountId, userId: req.userId } 
+        });
+        if (!newAccount) {
+            throw new AppError('Account not found or does not belong to user', 403);
         }
+        const newBalanceChange = newType === 'income' ? Number(newAmount) : -Number(newAmount);
+        newAccount.balance = Number(newAccount.balance) + newBalanceChange;
+        await accountRepository.save(newAccount);
     }
 
     // Update transaction
@@ -268,17 +277,20 @@ router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res:
         throw new AppError('Transaction not found', 404);
     }
 
-    // Revert account balance before deleting
+    // Revert account balance before deleting - validate account belongs to user
     if (transaction.accountId) {
-        const account = await accountRepository.findOne({ where: { id: transaction.accountId } });
-        if (account) {
-            // Reverse the original effect: income was added, expense was subtracted
-            const balanceRevert = transaction.type === 'income'
-                ? -Number(transaction.amount)
-                : Number(transaction.amount);
-            account.balance = Number(account.balance) + balanceRevert;
-            await accountRepository.save(account);
+        const account = await accountRepository.findOne({ 
+            where: { id: transaction.accountId, userId: req.userId } 
+        });
+        if (!account) {
+            throw new AppError('Account not found or does not belong to user', 403);
         }
+        // Reverse the original effect: income was added, expense was subtracted
+        const balanceRevert = transaction.type === 'income'
+            ? -Number(transaction.amount)
+            : Number(transaction.amount);
+        account.balance = Number(account.balance) + balanceRevert;
+        await accountRepository.save(account);
     }
 
     await transactionRepository.remove(transaction);
