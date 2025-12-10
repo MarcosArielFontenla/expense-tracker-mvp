@@ -8,6 +8,7 @@ import { AccountsService } from '../../accounts/service/accounts.service';
 import { Category } from '../../../core/models/category.model';
 import { Account } from '../../../core/models/account.model';
 import { TransactionDTO } from '../../../core/models/transaction.model';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-transaction-form',
@@ -33,7 +34,8 @@ export class TransactionForm implements OnInit {
     private categoriesService: CategoriesService,
     private accountsService: AccountsService,
     private router: Router,
-    private route: ActivatedRoute) { }
+    private route: ActivatedRoute,
+    private alertService: AlertService) { }
 
   public ngOnInit(): void {
     this.initializeForm();
@@ -152,10 +154,19 @@ export class TransactionForm implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.router.navigate(['/transactions']);
+        this.alertService.success(
+          this.isEditMode ? 'Transacción actualizada correctamente' : 'Transacción creada correctamente',
+          '¡Éxito!'
+        );
+        setTimeout(() => {
+          this.router.navigate(['/transactions']);
+        }, 1500);
       },
       error: (err) => {
-        this.error = err.message || 'Error al guardar la transacción';
+        this.alertService.error(
+          err.error?.message || 'Error al guardar la transacción',
+          'Error'
+        );
         this.isSubmitting = false;
       }
     });

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AccountsService } from '../service/accounts.service';
 import { Account, ACCOUNT_TYPE_LABELS } from '../../../core/models/account.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
     selector: 'app-accounts-list',
@@ -22,6 +23,7 @@ export class AccountsList implements OnInit {
         private accountsService: AccountsService,
         private authService: AuthService,
         private router: Router,
+        private alertService: AlertService,
         @Inject(PLATFORM_ID) private platformId: Object) { }
 
     public ngOnInit(): void {
@@ -75,21 +77,45 @@ export class AccountsList implements OnInit {
 
     public onArchiveAccount(account: Account): void {
         const action = account.isArchived ? 'restaurar' : 'archivar';
-        if (confirm(`¿Deseas ${action} la cuenta "${account.name}"?`)) {
-            this.accountsService.archiveAccount(account.id).subscribe({
-                error: (err) => console.error(err)
-            });
-        }
+        this.alertService.confirm(
+            `¿Deseas ${action} la cuenta "${account.name}"?`,
+            'Confirmar acción'
+        ).then((confirmed) => {
+            if (confirmed) {
+                this.accountsService.archiveAccount(account.id).subscribe({
+                    next: () => {
+                        this.alertService.success(
+                            `Cuenta ${account.isArchived ? 'restaurada' : 'archivada'} correctamente`
+                        );
+                    },
+                    error: (err) => {
+                        this.alertService.error('Error al procesar la solicitud');
+                        console.error(err);
+                    }
+                });
+            }
+        });
     }
 
     public onDeleteAccount(account: Account): void {
-        if (confirm(`¿Eliminar la cuenta "${account.name}"? Esta acción no se puede deshacer.`)) {
-            this.accountsService.deleteAccount(account.id).subscribe({
-                error: (err) => {
-                    alert('No se puede eliminar una cuenta con transacciones. Archívela en su lugar.');
-                    console.error(err);
-                }
-            });
-        }
+        this.alertService.confirmDelete(
+            `la cuenta "${account.name}"`,
+            'Esta acción no se puede deshacer'
+        ).then((confirmed) => {
+            if (confirmed) {
+                this.accountsService.deleteAccount(account.id).subscribe({
+                    next: () => {
+                        this.alertService.success('Cuenta eliminada correctamente');
+                    },
+                    error: (err) => {
+                        this.alertService.error(
+                            'No se puede eliminar una cuenta con transacciones. Archívela en su lugar.',
+                            'Error al eliminar'
+                        );
+                        console.error(err);
+                    }
+                });
+            }
+        });
     }
 }

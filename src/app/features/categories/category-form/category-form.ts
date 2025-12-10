@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { CategoriesService } from '../services/categories.service';
 import { CategoryDTO } from '../../../core/models/category.model';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-category-form',
@@ -37,7 +38,8 @@ export class CategoryForm implements OnInit {
     private fb: FormBuilder,
     private categoriesService: CategoriesService,
     private router: Router,
-    private route: ActivatedRoute) { }
+    private route: ActivatedRoute,
+    private alertService: AlertService) { }
 
   public ngOnInit(): void {
     this.initializeForm();
@@ -108,10 +110,19 @@ export class CategoryForm implements OnInit {
 
     request$.subscribe({
       next: () => {
-        this.router.navigate(['/categories']);
+        this.alertService.success(
+          this.isEditMode ? 'Categoría actualizada correctamente' : 'Categoría creada correctamente',
+          '¡Éxito!'
+        );
+        setTimeout(() => {
+          this.router.navigate(['/categories']);
+        }, 1500);
       },
       error: (err) => {
-        this.error = err.message || 'Error al guardar la categoría';
+        this.alertService.error(
+          err.error?.message || err.message || 'Error al guardar la categoría',
+          'Error'
+        );
         this.isSubmitting = false;
       }
     });

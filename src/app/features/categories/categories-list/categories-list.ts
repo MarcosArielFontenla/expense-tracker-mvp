@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { CategoriesService } from '../services/categories.service';
 import { Category } from '../../../core/models/category.model';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-categories-list',
@@ -21,6 +22,7 @@ export class CategoriesList implements OnInit {
   constructor(
     private categoriesService: CategoriesService,
     private router: Router,
+    private alertService: AlertService,
     @Inject(PLATFORM_ID) private platformId: Object) {
 
   }
@@ -77,16 +79,22 @@ export class CategoriesList implements OnInit {
   }
 
   public onDeleteCategory(category: Category): void {
-    if (confirm(`¿Estás seguro de eliminar la categoría "${category.name}"?`)) {
-      this.categoriesService.deleteCategory(category.id).subscribe({
-        next: () => {
-        },
-        error: (err) => {
-          this.error = 'Error al eliminar la categoría';
-          console.error(err);
-        }
-      });
-    }
+    this.alertService.confirmDelete(
+      `la categoría "${category.name}"`,
+      'Todas las transacciones asociadas quedarán sin categoría'
+    ).then((confirmed) => {
+      if (confirmed) {
+        this.categoriesService.deleteCategory(category.id).subscribe({
+          next: () => {
+            this.alertService.success('Categoría eliminada correctamente');
+          },
+          error: (err) => {
+            this.alertService.error('Error al eliminar la categoría');
+            console.error(err);
+          }
+        });
+      }
+    });
   }
 
   public getCategoryCount(type: 'expense' | 'income'): number {

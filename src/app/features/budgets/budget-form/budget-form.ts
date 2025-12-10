@@ -6,6 +6,7 @@ import { BudgetService } from '../services/budget.service';
 import { CategoriesService } from '../../categories/services/categories.service';
 import { Category } from '../../../core/models/category.model';
 import { BudgetDTO } from '../../../core/models/budget.model';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
     selector: 'app-budget-form',
@@ -45,6 +46,7 @@ export class BudgetForm implements OnInit {
         private categoriesService: CategoriesService,
         private router: Router,
         private route: ActivatedRoute,
+        private alertService: AlertService,
         @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         const currentYear = today.getFullYear();
@@ -133,10 +135,19 @@ export class BudgetForm implements OnInit {
 
         request$.subscribe({
             next: () => {
-                this.router.navigate(['/budgets']);
+                this.alertService.success(
+                    this.isEditMode ? 'Presupuesto actualizado correctamente' : 'Presupuesto creado correctamente',
+                    '¡Éxito!'
+                );
+                setTimeout(() => {
+                    this.router.navigate(['/budgets']);
+                }, 1500);
             },
             error: (err) => {
-                this.error = err.message || 'Error al guardar el presupuesto';
+                this.alertService.error(
+                    err.error?.message || err.message || 'Error al guardar el presupuesto',
+                    'Error'
+                );
                 this.isSubmitting = false;
             }
         });

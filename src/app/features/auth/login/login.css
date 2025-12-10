@@ -1,1 +1,4 @@
-/* Add component-specific styles here */
+.login-logo {
+    max-width: 60%;
+    height: 200px;
+}
