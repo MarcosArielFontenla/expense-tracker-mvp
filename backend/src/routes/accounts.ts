@@ -5,6 +5,7 @@ import { Transaction } from '../entities/Transaction';
 import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
+import { checkPlanLimit } from '../middleware/planLimit.middleware';
 import { body, validationResult } from 'express-validator';
 import { Not } from 'typeorm';
 
@@ -21,22 +22,19 @@ const accountValidation = [
     body('isDefault').optional().isBoolean()
 ];
 
-// Get all accounts for user
+// Get all accounts
 router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
     const accountRepository = AppDataSource.getRepository(Account);
-
     const accounts = await accountRepository.find({
-        where: { userId: req.userId, isArchived: false },
+        where: { userId: req.userId },
         order: { isDefault: 'DESC', name: 'ASC' }
     });
-
     res.json(accounts);
 }));
 
 // Get single account
 router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
     const accountRepository = AppDataSource.getRepository(Account);
-
     const account = await accountRepository.findOne({
         where: { id: req.params.id, userId: req.userId }
     });
@@ -49,7 +47,9 @@ router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Re
 }));
 
 // Create account
-router.post('/', authMiddleware, accountValidation, asyncHandler(async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, checkPlanLimit('accounts'), accountValidation, asyncHandler(async (req: AuthRequest, res: Response) => {
+
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         throw new AppError(errors.array()[0].msg, 400);
@@ -176,8 +176,8 @@ router.patch('/:id/archive', authMiddleware, asyncHandler(async (req: AuthReques
         // Exclude the current account from the query to avoid selecting it
         // (since it hasn't been saved yet, it still has isArchived: false in DB)
         const anotherAccount = await accountRepository.findOne({
-            where: { 
-                userId: req.userId, 
+            where: {
+                userId: req.userId,
                 isArchived: false,
                 id: Not(account.id)
             }

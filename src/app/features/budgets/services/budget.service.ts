@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { Budget, BudgetDTO, BudgetStatus } from '../../../core/models/budget.model';
 import { environment } from '../../../environments/environment.development';
+import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,7 @@ export class BudgetService {
 
     private apiUrl = `${environment.apiUrl}/budgets`;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private subscriptionService: SubscriptionService) { }
 
     public getBudgets(month: number, year: number): Observable<BudgetStatus[]> {
         return this.http.get<BudgetStatus[]>(`${this.apiUrl}/${month}/${year}`)
@@ -36,7 +37,10 @@ export class BudgetService {
 
     public createBudget(budgetDTO: BudgetDTO): Observable<Budget> {
         return this.http.post<Budget>(this.apiUrl, budgetDTO)
-            .pipe(tap(() => this.refreshBudgets(budgetDTO.month, budgetDTO.year)));
+            .pipe(tap(() => {
+                this.refreshBudgets(budgetDTO.month, budgetDTO.year);
+                this.subscriptionService.refreshUsage();
+            }));
     }
 
     public updateBudget(id: string, budgetDTO: Partial<BudgetDTO>): Observable<Budget> {
@@ -45,6 +49,7 @@ export class BudgetService {
                 tap(() => {
                     const now = new Date();
                     this.refreshBudgets(now.getMonth() + 1, now.getFullYear());
+                    this.subscriptionService.refreshUsage();
                 })
             );
     }
@@ -55,6 +60,7 @@ export class BudgetService {
                 tap(() => {
                     const now = new Date();
                     this.refreshBudgets(now.getMonth() + 1, now.getFullYear());
+                    this.subscriptionService.refreshUsage();
                 })
             );
     }

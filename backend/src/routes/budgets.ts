@@ -9,6 +9,7 @@ import { budgetValidation } from '../validators/budget.validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
 import { AuditService } from '../services/audit.service';
+import { checkPlanLimit } from '../middleware/planLimit.middleware';
 
 const router = express.Router();
 
@@ -60,7 +61,7 @@ router.get('/:month/:year', authMiddleware, asyncHandler(async (req: AuthRequest
 }));
 
 // Create budget
-router.post('/', authMiddleware, budgetValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, checkPlanLimit('budgets'), budgetValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
     const { categoryId, amount, month, year, alertThreshold } = req.body;
 
     const budgetRepository = AppDataSource.getRepository(Budget);

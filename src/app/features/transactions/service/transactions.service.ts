@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, tap } from 'rxjs';
 import { Transaction, TransactionDTO, TransactionFilter, MonthlySummary } from '../../../core/models/transaction.model';
 import { environment } from '../../../environments/environment.development';
+import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,10 @@ export class TransactionsService {
 
     private apiUrl = `${environment.apiUrl}/transactions`;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private subscriptionService: SubscriptionService
+    ) { }
 
     public getTransactions(filter?: TransactionFilter): Observable<Transaction[]> {
         let params = new HttpParams();
@@ -61,5 +65,6 @@ export class TransactionsService {
 
     private refreshTransactions(): void {
         this.refreshSubject.next();
+        this.subscriptionService.refreshUsage();
     }
 }

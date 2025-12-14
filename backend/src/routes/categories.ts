@@ -5,33 +5,23 @@ import { authMiddleware, AuthRequest } from '../middlewares/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
 
+import { checkPlanLimit } from '../middleware/planLimit.middleware';
+
 const router = express.Router();
 
-// Get all categories for the authenticated user
+// Get all categories
 router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
     const categoryRepository = AppDataSource.getRepository(Category);
     const categories = await categoryRepository.find({
-        where: { userId: req.userId }
+        where: { userId: req.userId },
+        order: { name: 'ASC' }
     });
     res.json(categories);
 }));
 
-// Get category by ID
-router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
-    const categoryRepository = AppDataSource.getRepository(Category);
-    const category = await categoryRepository.findOne({
-        where: { id: req.params.id, userId: req.userId }
-    });
-
-    if (!category) {
-        throw new AppError('Category not found', 404);
-    }
-
-    res.json(category);
-}));
-
 // Create category
-router.post('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, checkPlanLimit('categories'), asyncHandler(async (req: AuthRequest, res: Response) => {
+
     const { name, icon, color, type, isDefault } = req.body;
 
     if (!name || !icon || !color || !type) {

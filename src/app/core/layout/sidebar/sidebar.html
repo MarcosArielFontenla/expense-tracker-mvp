@@ -14,6 +14,10 @@
         </a>
     </nav>
 
+    <div class="px-4 pb-2">
+        <app-plan-usage></app-plan-usage>
+    </div>
+
     <!-- User Menu with Dropdown -->
     <div class="p-4 border-t border-white/10 user-menu-container relative">
         <div *ngIf="currentUser$ | async as user" (click)="toggleDropdown()"

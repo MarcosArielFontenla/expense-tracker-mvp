@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
+import { PlanUsageComponent } from '../../../shared/components/plan-usage/plan-usage.component';
+
 @Component({
     selector: 'app-sidebar',
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, PlanUsageComponent],
     templateUrl: './sidebar.html',
     styleUrl: './sidebar.css',
     standalone: true

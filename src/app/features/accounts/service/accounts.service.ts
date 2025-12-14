@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, tap } from 'rxjs';
 import { Account, AccountDTO } from '../../../core/models/account.model';
 import { environment } from '../../../environments/environment.development';
+import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,7 @@ export class AccountsService {
 
     private apiUrl = `${environment.apiUrl}/accounts`;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private subscriptionService: SubscriptionService) { }
 
     public getAccounts(): Observable<Account[]> {
         return this.http.get<Account[]>(this.apiUrl);
@@ -25,7 +26,10 @@ export class AccountsService {
 
     public createAccount(account: AccountDTO): Observable<Account> {
         return this.http.post<Account>(this.apiUrl, account).pipe(
-            tap(() => this.refreshAccounts())
+            tap(() => {
+                this.refreshAccounts();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 
@@ -37,13 +41,19 @@ export class AccountsService {
 
     public deleteAccount(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-            tap(() => this.refreshAccounts())
+            tap(() => {
+                this.refreshAccounts();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 
     public archiveAccount(id: string): Observable<Account> {
         return this.http.patch<Account>(`${this.apiUrl}/${id}/archive`, {}).pipe(
-            tap(() => this.refreshAccounts())
+            tap(() => {
+                this.refreshAccounts();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 

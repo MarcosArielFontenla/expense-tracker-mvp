@@ -3,7 +3,8 @@ import { body } from 'express-validator';
 export const budgetValidation = [
     body('categoryId')
         .notEmpty().withMessage('Category ID is required')
-        .isInt().withMessage('Category ID must be an integer'),
+        .notEmpty().withMessage('Category ID is required')
+        .isUUID().withMessage('Category ID must be a valid UUID'),
     body('amount')
         .notEmpty().withMessage('Amount is required')
         .isFloat({ gt: 0 }).withMessage('Amount must be a positive number'),
