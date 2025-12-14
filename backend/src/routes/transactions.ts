@@ -9,6 +9,7 @@ import { transactionValidation } from '../validators/transaction.validation';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { AppError } from '../utils/AppError';
 import { AuditService } from '../services/audit.service';
+import { checkPlanLimit } from '../middleware/planLimit.middleware';
 
 const router = express.Router();
 
@@ -139,7 +140,7 @@ router.get('/summary/:month/:year', authMiddleware, asyncHandler(async (req: Aut
 }));
 
 // Create transaction
-router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, checkPlanLimit('transactions'), transactionValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
     const { type, amount, categoryId, accountId, date, note } = req.body;
 
     const transactionRepository = AppDataSource.getRepository(Transaction);
@@ -170,8 +171,8 @@ router.post('/', authMiddleware, transactionValidation, validateRequest, asyncHa
 
     // Update account balance - validate account belongs to user
     if (finalAccountId) {
-        const account = await accountRepository.findOne({ 
-            where: { id: finalAccountId, userId: req.userId } 
+        const account = await accountRepository.findOne({
+            where: { id: finalAccountId, userId: req.userId }
         });
         if (!account) {
             throw new AppError('Account not found or does not belong to user', 403);
@@ -222,8 +223,8 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
 
     // Revert balance from original account - validate account belongs to user
     if (originalAccountId) {
-        const originalAccount = await accountRepository.findOne({ 
-            where: { id: originalAccountId, userId: req.userId } 
+        const originalAccount = await accountRepository.findOne({
+            where: { id: originalAccountId, userId: req.userId }
         });
         if (!originalAccount) {
             throw new AppError('Original account not found or does not belong to user', 403);
@@ -237,8 +238,8 @@ router.put('/:id', authMiddleware, transactionValidation, validateRequest, async
 
     // Apply new balance to new account - validate account belongs to user
     if (finalAccountId) {
-        const newAccount = await accountRepository.findOne({ 
-            where: { id: finalAccountId, userId: req.userId } 
+        const newAccount = await accountRepository.findOne({
+            where: { id: finalAccountId, userId: req.userId }
         });
         if (!newAccount) {
             throw new AppError('Account not found or does not belong to user', 403);
@@ -279,8 +280,8 @@ router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res:
 
     // Revert account balance before deleting - validate account belongs to user
     if (transaction.accountId) {
-        const account = await accountRepository.findOne({ 
-            where: { id: transaction.accountId, userId: req.userId } 
+        const account = await accountRepository.findOne({
+            where: { id: transaction.accountId, userId: req.userId }
         });
         if (!account) {
             throw new AppError('Account not found or does not belong to user', 403);

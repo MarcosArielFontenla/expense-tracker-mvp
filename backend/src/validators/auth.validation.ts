@@ -10,7 +10,10 @@ export const registerValidation = [
         .isEmail().withMessage('Must be a valid email address')
         .normalizeEmail(),
     body('password')
-        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('plan')
+        .optional()
+        .isIn(['free', 'starter', 'pro', 'max']).withMessage('Invalid plan selected')
 ];
 
 export const loginValidation = [

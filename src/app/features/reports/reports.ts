@@ -7,6 +7,8 @@ import { Category } from '../../core/models/category.model';
 import { Transaction } from '../../core/models/transaction.model';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
+import { UpgradeService } from '../../core/services/upgrade.service';
 
 type ReportType = 'monthly' | 'custom' | 'category';
 
@@ -62,6 +64,8 @@ export class Reports implements OnInit {
     private categoriesService: CategoriesService,
     private authService: AuthService,
     private alertService: AlertService,
+    private subscriptionService: SubscriptionService,
+    private upgradeService: UpgradeService,
     @Inject(PLATFORM_ID) private platformId: Object) {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -223,6 +227,18 @@ export class Reports implements OnInit {
       return;
     }
 
+    this.subscriptionService.trackExport('csv').subscribe({
+      next: () => this.generateCSV(),
+      error: (err) => this.handleExportError(err)
+    });
+  }
+
+  private generateCSV(): void {
+    if (this.transactions.length === 0) {
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
+      return;
+    }
+
     // Create CSV content
     const headers = ['Fecha', 'Categoría', 'Descripción', 'Tipo', 'Monto'];
     const csvContent = [
@@ -263,7 +279,19 @@ export class Reports implements OnInit {
     document.body.removeChild(link);
   }
 
-  public async exportToExcel(): Promise<void> {
+  public exportToExcel(): void {
+    if (this.transactions.length === 0) {
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
+      return;
+    }
+
+    this.subscriptionService.trackExport('excel').subscribe({
+      next: () => this.generateExcel(),
+      error: (err) => this.handleExportError(err)
+    });
+  }
+
+  private async generateExcel(): Promise<void> {
     if (this.transactions.length === 0) {
       this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
       return;
@@ -325,7 +353,19 @@ export class Reports implements OnInit {
     }
   }
 
-  public async exportToPDF(): Promise<void> {
+  public exportToPDF(): void {
+    if (this.transactions.length === 0) {
+      this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
+      return;
+    }
+
+    this.subscriptionService.trackExport('pdf').subscribe({
+      next: () => this.generatePDF(),
+      error: (err) => this.handleExportError(err)
+    });
+  }
+
+  private async generatePDF(): Promise<void> {
     if (this.transactions.length === 0) {
       this.alertService.warning('No hay transacciones para exportar', 'Sin datos');
       return;
@@ -433,6 +473,17 @@ export class Reports implements OnInit {
         return `Por Categoría - ${this.getCategoryName(this.selectedCategory)}`;
       default:
         return 'Reporte';
+    }
+  }
+
+  private handleExportError(error: any): void {
+    console.error('Export error:', error);
+    const message = error.error?.message || 'Error al procesar la exportación';
+
+    if (error.status === 403) {
+      this.upgradeService.showUpgradeModal(message, 'Límite Alcanzado');
+    } else {
+      this.alertService.error(message, 'Error');
     }
   }
 }

@@ -2,6 +2,9 @@ import { Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { Transaction } from '../entities/Transaction';
 import { AuthRequest } from '../middlewares/auth';
+import { User, PlanTier } from '../entities/User';
+import { PlanLimit } from '../entities/PlanLimit';
+import { AuditService } from '../services/audit.service';
 
 export class ReportsController {
 
@@ -254,6 +257,47 @@ export class ReportsController {
         } catch (error) {
             console.error('Error getting category detailed report:', error);
             res.status(500).json({ message: 'Error retrieving category detailed report' });
+        }
+    }
+    public async trackExport(req: AuthRequest, res: Response) {
+        try {
+            const userId = req.userId;
+            const { format } = req.body;
+
+            if (!format || !['csv', 'excel', 'pdf'].includes(format)) {
+                return res.status(400).json({ message: 'Invalid export format' });
+            }
+
+            // Check format permission
+            const userRepository = AppDataSource.getRepository(User);
+            const user = await userRepository.findOne({ where: { id: userId } });
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const planLimitRepository = AppDataSource.getRepository(PlanLimit);
+            const limits = await planLimitRepository.findOne({ where: { tier: user.plan as PlanTier } });
+
+            if (!limits) {
+                return res.status(500).json({ message: 'Plan limits not found' });
+            }
+
+            const permissionKey = `canExport${format.charAt(0).toUpperCase() + format.slice(1)}` as keyof PlanLimit;
+
+            if (!limits[permissionKey]) {
+                return res.status(403).json({
+                    message: `Tu plan (${user.plan}) no soporta exportación en formato ${format.toUpperCase()}. Por favor, actualiza.`
+                });
+            }
+
+            // Audit Log (Counts towards the limit)
+            await AuditService.logAction(userId!, `EXPORT_${format.toUpperCase()}`, req, { format });
+
+            res.json({ success: true, message: 'Export tracked successfully' });
+        } catch (error) {
+            console.error('Error tracking export:', error);
+            res.status(500).json({ message: 'Error tracking export' });
         }
     }
 }

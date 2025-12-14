@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Category } from '../../../core/models/category.model';
 import { environment } from '../../../environments/environment.development';
+import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +15,7 @@ export class CategoriesService {
 
     private apiUrl = `${environment.apiUrl}/categories`;
 
-    constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {
+    constructor(private http: HttpClient, private subscriptionService: SubscriptionService, @Inject(PLATFORM_ID) private platformId: Object) {
         if (isPlatformBrowser(this.platformId)) {
             this.loadCategories();
         }
@@ -41,19 +42,28 @@ export class CategoriesService {
 
     public createCategory(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Observable<Category> {
         return this.http.post<Category>(this.apiUrl, category).pipe(
-            tap(() => this.loadCategories())
+            tap(() => {
+                this.loadCategories();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 
     public updateCategory(id: string, category: Partial<Category>): Observable<Category> {
         return this.http.put<Category>(`${this.apiUrl}/${id}`, category).pipe(
-            tap(() => this.loadCategories())
+            tap(() => {
+                this.loadCategories();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 
     public deleteCategory(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-            tap(() => this.loadCategories())
+            tap(() => {
+                this.loadCategories();
+                this.subscriptionService.refreshUsage();
+            })
         );
     }
 }

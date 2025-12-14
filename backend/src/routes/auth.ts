@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import { AppDataSource } from '../config/database';
-import { User } from '../entities/User';
-import { authLimiter } from '../middleware/rateLimit.middleware';
+import { User, PlanTier, SubscriptionStatus } from '../entities/User';
+// import { authLimiter } from '../middleware/rateLimit.middleware';
 import { validateRequest } from '../middleware/validateRequest';
 import {
     registerValidation,
@@ -17,14 +17,15 @@ import { AuditService } from '../services/audit.service';
 const router = express.Router();
 
 // Apply rate limiting to sensitive routes
-router.use('/register', authLimiter);
-router.use('/login', authLimiter);
-router.use('/forgot-password', authLimiter);
-router.use('/resend-verification', authLimiter);
+// Apply rate limiting to sensitive routes
+// router.use('/register', authLimiter);
+// router.use('/login', authLimiter);
+// router.use('/forgot-password', authLimiter);
+// router.use('/resend-verification', authLimiter);
 
 // Register
 router.post('/register', registerValidation, validateRequest, asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, plan } = req.body;
 
     // Check if user exists
     const userRepository = AppDataSource.getRepository(User);
@@ -42,11 +43,29 @@ router.post('/register', registerValidation, validateRequest, asyncHandler(async
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const hashedToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
 
-    // Create user (emailVerified = false by default)
+    // Determine Plan and Trial Status
+    let selectedPlan = PlanTier.FREE;
+    let subStatus = SubscriptionStatus.ACTIVE;
+    let trialStartDate = undefined;
+
+    if (plan && Object.values(PlanTier).includes(plan as PlanTier)) {
+        selectedPlan = plan as PlanTier;
+    }
+
+    // If a paid plan is selected, start trial
+    if (selectedPlan !== PlanTier.FREE) {
+        subStatus = SubscriptionStatus.TRIALING;
+        trialStartDate = new Date();
+    }
+
+    // Create user
     const user = userRepository.create({
         name,
         email,
         passwordHash,
+        plan: selectedPlan,
+        subStatus: subStatus,
+        trialStartDate: trialStartDate,
         emailVerificationToken: hashedToken,
         emailVerificationExpires: new Date(Date.now() + 24 * 3600000) // 24 hours
     });
@@ -107,7 +126,10 @@ router.post('/login', loginValidation, validateRequest, asyncHandler(async (req:
             name: user.name,
             email: user.email,
             currency: user.currency,
-            timezone: user.timezone
+            timezone: user.timezone,
+            plan: user.plan,
+            subStatus: user.subStatus,
+            trialStartDate: user.trialStartDate
         }
     });
 }));
@@ -318,6 +340,9 @@ router.get('/profile', asyncHandler(async (req: Request, res: Response) => {
         email: user.email,
         currency: user.currency,
         timezone: user.timezone,
+        plan: user.plan,
+        subStatus: user.subStatus,
+        trialStartDate: user.trialStartDate,
         emailVerified: user.emailVerified,
         createdAt: user.createdAt
     });

@@ -1,0 +1,63 @@
+<div class="p-4 bg-gray-50 rounded-lg dark:bg-gray-800" *ngIf="status">
+    <div class="flex justify-between items-center mb-2">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Plan: <span class="uppercase font-bold text-blue-600">{{ status.plan }}</span>
+        </span>
+        <button *ngIf="status.plan === 'free'" (click)="upgrade()"
+            class="text-xs px-2 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded hover:from-blue-600 hover:to-indigo-700 transition-all">
+            Upgrade
+        </button>
+    </div>
+
+    <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1 text-gray-600 dark:text-gray-400">
+            <span>Transactions (Monthly)</span>
+            <span>{{ status.usage.transactions }} / {{ status.limits.maxTransactionsMonthly }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                [style.width.%]="getPercentage(status.usage.transactions, status.limits.maxTransactionsMonthly)"
+                [class.bg-red-500]="isNearLimit(status.usage.transactions, status.limits.maxTransactionsMonthly)">
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1 text-gray-600 dark:text-gray-400">
+            <span>Accounts</span>
+            <span>{{ status.usage.accounts }} / {{ status.limits.maxAccounts }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div class="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                [style.width.%]="getPercentage(status.usage.accounts, status.limits.maxAccounts)"
+                [class.bg-red-500]="isNearLimit(status.usage.accounts, status.limits.maxAccounts)">
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1 text-gray-600 dark:text-gray-400">
+            <span>Categories</span>
+            <span>{{ status.usage.categories }} / {{ status.limits.maxCategories }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div class="bg-purple-500 h-2.5 rounded-full transition-all duration-500"
+                [style.width.%]="getPercentage(status.usage.categories, status.limits.maxCategories)"
+                [class.bg-red-500]="isNearLimit(status.usage.categories, status.limits.maxCategories)">
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <div class="flex justify-between text-xs mb-1 text-gray-600 dark:text-gray-400">
+            <span>Budgets</span>
+            <span>{{ status.usage.budgets }} / {{ status.limits.maxBudgets }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div class="bg-orange-500 h-2.5 rounded-full transition-all duration-500"
+                [style.width.%]="getPercentage(status.usage.budgets, status.limits.maxBudgets)"
+                [class.bg-red-500]="isNearLimit(status.usage.budgets, status.limits.maxBudgets)">
+            </div>
+        </div>
+    </div>
+</div>

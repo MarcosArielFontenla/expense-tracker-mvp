@@ -8,6 +8,9 @@ import { BudgetStatus } from '../../../core/models/budget.model';
 import { Category } from '../../../core/models/category.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertService } from '../../../core/services/alert.service';
+import { SubscriptionService } from '../../../core/services/subscription.service';
+import { UpgradeService } from '../../../core/services/upgrade.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-budget-list',
@@ -41,11 +44,16 @@ export class BudgetList implements OnInit {
 
     years: number[] = [];
 
+    subscriptionStatus: any = null;
+
     constructor(
         private budgetService: BudgetService,
         private categoriesService: CategoriesService,
         private authService: AuthService,
         private alertService: AlertService,
+        private subscriptionService: SubscriptionService,
+        private upgradeService: UpgradeService,
+        private router: Router,
         @Inject(PLATFORM_ID) private platformId: Object) {
         const today = new Date();
         this.selectedMonth = today.getMonth() + 1;
@@ -59,6 +67,11 @@ export class BudgetList implements OnInit {
 
     public ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) {
+            // Subscribe to subscription status
+            this.subscriptionService.usage$.subscribe(status => {
+                this.subscriptionStatus = status;
+            });
+
             // Get user currency
             this.authService.currentUser$.subscribe(user => {
                 if (user) {
@@ -117,5 +130,22 @@ export class BudgetList implements OnInit {
                 });
             }
         });
+    }
+
+    public onCreateBudget(): void {
+        if (this.subscriptionStatus) {
+            const limits = this.subscriptionStatus.limits;
+            const usage = this.subscriptionStatus.usage;
+
+            if (usage && limits && usage.budgets >= limits.maxBudgets) {
+                this.upgradeService.showUpgradeModal(
+                    `Has alcanzado el límite de ${limits.maxBudgets} presupuestos para tu plan actual.`,
+                    'Límite de Presupuestos'
+                );
+                return;
+            }
+        }
+
+        this.router.navigate(['/budgets/new']);
     }
 }
