@@ -10,13 +10,19 @@ class EmailService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
+        const port = parseInt(process.env.SMTP_PORT || '587');
         this.transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: false, // true for 465, false for other ports
+            port: port,
+            secure: port === 465, // true for 465, false for other ports
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
+            },
+            // Add these options to prevent timeouts in some cloud environments
+            tls: {
+                ciphers: 'SSLv3',
+                rejectUnauthorized: false
             }
         });
     }
