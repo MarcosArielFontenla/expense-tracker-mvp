@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 interface EmailOptions {
     to: string;
@@ -7,38 +7,31 @@ interface EmailOptions {
 }
 
 class EmailService {
-    private transporter: nodemailer.Transporter;
+    private resend: Resend;
 
     constructor() {
-        const port = parseInt(process.env.SMTP_PORT || '465'); // Default to 465 SSL
-
-        // We force manual config with IPv4 to avoid Railway IPv6 issues with Gmail
-        this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: port,
-            secure: port === 465, // true for 465
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            },
-            tls: {
-                // Do not fail on invalid certs
-                rejectUnauthorized: false
-            },
-            // @ts-ignore
-            family: 4 // Force IPv4
-        } as any);
+        // Initialize Resend with API Key from env
+        this.resend = new Resend(process.env.RESEND_API_KEY);
     }
 
     async sendEmail(options: EmailOptions): Promise<void> {
         try {
-            await this.transporter.sendMail({
-                from: `"Expense Tracker" <${process.env.SMTP_USER}>`,
+            // Use configured sender or default to Resend's testing domain
+            const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+
+            const data = await this.resend.emails.send({
+                from: `Expense Tracker <${fromEmail}>`,
                 to: options.to,
                 subject: options.subject,
                 html: options.html
             });
-            console.log(`✅ Email sent to ${options.to}`);
+
+            if (data.error) {
+                console.error('❌ Resend API Error:', data.error);
+                throw new Error(data.error.message);
+            }
+
+            console.log(`✅ Email sent to ${options.to} via Resend. ID: ${data.data?.id}`);
         } catch (error) {
             console.error('❌ Email sending error:', error);
             throw new Error('Failed to send email');
