@@ -10,34 +10,24 @@ class EmailService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
-        // Use the built-in 'gmail' service option if the host indicates gmail
-        const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-        const isGmail = smtpHost.includes('gmail');
+        const port = parseInt(process.env.SMTP_PORT || '465'); // Default to 465 SSL
 
-        if (isGmail) {
-            this.transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                }
-            });
-        } else {
-            const port = parseInt(process.env.SMTP_PORT || '587');
-            this.transporter = nodemailer.createTransport({
-                host: smtpHost,
-                port: port,
-                secure: port === 465, // true for 465, false for other ports
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                },
-                // Add these options to prevent timeouts in some cloud environments
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
-        }
+        // We force manual config with IPv4 to avoid Railway IPv6 issues with Gmail
+        this.transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: port,
+            secure: port === 465, // true for 465
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            },
+            tls: {
+                // Do not fail on invalid certs
+                rejectUnauthorized: false
+            },
+            // @ts-ignore
+            family: 4 // Force IPv4
+        } as any);
     }
 
     async sendEmail(options: EmailOptions): Promise<void> {
