@@ -14,7 +14,9 @@ class EmailService {
         // For Gmail App Passwords, port 587/TLS is standard, or 465/SSL.
         // using 'service: gmail' abstracts this mostly, but explicit auth is needed.
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, // Use SSL
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
