@@ -27,7 +27,7 @@ export class Register implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             password: ['', [Validators.required, Validators.minLength(6)]],
             confirmPassword: ['', [Validators.required]],
-            plan: [''] // Hidden field for plan
+            plan: ['free'] // Default to free plan
         }, {
             validators: this.passwordMatchValidator
         });
