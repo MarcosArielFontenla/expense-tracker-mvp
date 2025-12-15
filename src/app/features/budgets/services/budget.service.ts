@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { Budget, BudgetDTO, BudgetStatus } from '../../../core/models/budget.model';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({

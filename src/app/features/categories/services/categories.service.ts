@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Category } from '../../../core/models/category.model';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, tap } from 'rxjs';
 import { Transaction, TransactionDTO, TransactionFilter, MonthlySummary } from '../../../core/models/transaction.model';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 
 @Injectable({

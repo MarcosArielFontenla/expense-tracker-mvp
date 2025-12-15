@@ -28,7 +28,7 @@ export class SubscriptionService {
     }
 
     public checkAllTrials(): Observable<any> {
-        return this.http.post(`${this.apiUrl}/subscription/check-trials`, {});
+        return this.http.post(`${this.apiUrl}/check-trials`, {});
     }
 
     public trackExport(format: 'csv' | 'excel' | 'pdf'): Observable<any> {
