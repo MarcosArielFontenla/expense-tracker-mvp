@@ -1,6 +1,6 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:3000/api', // Change this for production
+    apiUrl: 'https://expense-tracker-mvp-production.up.railway.app/api',
     appName: 'Expense Tracker MVP',
     version: '1.0.0'
 };
