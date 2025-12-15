@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 interface EmailOptions {
     to: string;
@@ -7,33 +7,41 @@ interface EmailOptions {
 }
 
 class EmailService {
-    private resend: Resend;
+    private transporter;
 
     constructor() {
-        // Initialize Resend with API Key from env
-        this.resend = new Resend(process.env.RESEND_API_KEY);
+        // Initialize Nodemailer with Gmail service
+        // For Gmail App Passwords, port 587/TLS is standard, or 465/SSL.
+        // using 'service: gmail' abstracts this mostly, but explicit auth is needed.
+        this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
     }
 
     async sendEmail(options: EmailOptions): Promise<void> {
         try {
-            // Use configured sender or default to Resend's testing domain
-            const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-
-            const data = await this.resend.emails.send({
-                from: `Expense Tracker <${fromEmail}>`,
+            const info = await this.transporter.sendMail({
+                from: `"Expense Tracker" <${process.env.SMTP_USER}>`, // Sender address
                 to: options.to,
                 subject: options.subject,
                 html: options.html
             });
 
-            if (data.error) {
-                console.error('❌ Resend API Error:', data.error);
-                throw new Error(data.error.message);
-            }
-
-            console.log(`✅ Email sent to ${options.to} via Resend. ID: ${data.data?.id}`);
+            console.log(`✅ Email sent to ${options.to}. MessageId: ${info.messageId}`);
         } catch (error) {
             console.error('❌ Email sending error:', error);
+            console.error('Stack:', error);
+            // Fallback: Log content for debugging/manual recovery
+            console.log('⚠️ FALLBACK - EMAIL CONTENT ⚠️');
+            console.log(`To: ${options.to}`);
+            console.log(`Subject: ${options.subject}`);
+            console.log('content: ', options.html);
+            console.log('⚠️ END FALLBACK ⚠️');
+
             throw new Error('Failed to send email');
         }
     }
