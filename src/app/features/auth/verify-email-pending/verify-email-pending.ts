@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-verify-email-pending',
@@ -51,7 +52,7 @@ export class VerifyEmailPending implements OnInit {
     this.error = '';
     this.message = '';
 
-    this.http.post('http://localhost:3000/api/auth/resend-verification', { email: this.email })
+    this.http.post(`${environment.apiUrl}/auth/resend-verification`, { email: this.email })
       .subscribe({
         next: () => {
           this.message = '¡Email de verificación reenviado! Revisa tu bandeja de entrada.';
