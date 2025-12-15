@@ -7,6 +7,7 @@ export interface RegisterRequest {
     name: string;
     email: string;
     password: string;
+    plan?: string;
 }
 
 export interface AuthResponse {
