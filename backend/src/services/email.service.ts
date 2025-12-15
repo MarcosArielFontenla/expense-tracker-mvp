@@ -10,21 +10,34 @@ class EmailService {
     private transporter: nodemailer.Transporter;
 
     constructor() {
-        const port = parseInt(process.env.SMTP_PORT || '587');
-        this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: port,
-            secure: port === 465, // true for 465, false for other ports
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            },
-            // Add these options to prevent timeouts in some cloud environments
-            tls: {
-                ciphers: 'SSLv3',
-                rejectUnauthorized: false
-            }
-        });
+        // Use the built-in 'gmail' service option if the host indicates gmail
+        const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+        const isGmail = smtpHost.includes('gmail');
+
+        if (isGmail) {
+            this.transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                }
+            });
+        } else {
+            const port = parseInt(process.env.SMTP_PORT || '587');
+            this.transporter = nodemailer.createTransport({
+                host: smtpHost,
+                port: port,
+                secure: port === 465, // true for 465, false for other ports
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                },
+                // Add these options to prevent timeouts in some cloud environments
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+        }
     }
 
     async sendEmail(options: EmailOptions): Promise<void> {
