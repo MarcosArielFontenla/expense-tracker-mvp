@@ -74,7 +74,13 @@ router.post('/register', registerValidation, validateRequest, asyncHandler(async
 
     // Send verification email
     const emailService = require('../services/email.service').default;
-    await emailService.sendVerificationEmail(email, verificationToken);
+
+    try {
+        await emailService.sendVerificationEmail(email, verificationToken);
+    } catch (error) {
+        await userRepository.delete(user.id);
+        throw new AppError('Failed to send verification email. Please try again.', 500);
+    }
 
     res.status(201).json({
         message: 'Registration successful. Please check your email to verify your account.',
