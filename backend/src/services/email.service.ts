@@ -40,7 +40,6 @@ class EmailService {
         } catch (error: any) {
             console.error('❌ Brevo API sending error:', error?.response?.data || error.message);
 
-            // Fallback for MVP/No-Domain: Log the content so admin can see the link
             console.log('⚠️ FALLBACK - EMAIL CONTENT ⚠️');
             console.log(`To: ${options.to}`);
             console.log(`Subject: ${options.subject}`);
