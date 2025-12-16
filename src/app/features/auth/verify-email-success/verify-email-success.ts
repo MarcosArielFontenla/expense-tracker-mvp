@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
@@ -33,7 +34,7 @@ export class VerifyEmailSuccess implements OnInit {
   }
 
   public verifyEmail(token: string) {
-    this.http.get(`http://localhost:3000/api/auth/verify-email/${token}`)
+    this.http.get(`${environment.apiUrl}/auth/verify-email/${token}`)
       .subscribe({
         next: (response: any) => {
           this.success = true;
