@@ -14,16 +14,14 @@ class EmailService {
         // For Gmail App Passwords, port 587/TLS is standard, or 465/SSL.
         // using 'service: gmail' abstracts this mostly, but explicit auth is needed.
         this.transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
+            host: 'smtp-relay.brevo.com',
             port: 587,
             secure: false, // Use STARTTLS
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
-            },
-            // Force IPv4 to avoid IPv6 timeouts in some cloud environments
-            family: 4
-        } as any);
+            }
+        });
     }
 
     async sendEmail(options: EmailOptions): Promise<void> {
