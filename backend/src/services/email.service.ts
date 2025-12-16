@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 interface EmailOptions {
     to: string;
@@ -7,44 +7,45 @@ interface EmailOptions {
 }
 
 class EmailService {
-    private transporter;
+    private readonly apiUrl = 'https://api.brevo.com/v3/smtp/email';
 
-    constructor() {
-        // Initialize Nodemailer with Gmail service
-        // For Gmail App Passwords, port 587/TLS is standard, or 465/SSL.
-        // using 'service: gmail' abstracts this mostly, but explicit auth is needed.
-        this.transporter = nodemailer.createTransport({
-            host: 'smtp-relay.brevo.com',
-            port: 587,
-            secure: false, // Use STARTTLS
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-    }
+    constructor() { }
 
     async sendEmail(options: EmailOptions): Promise<void> {
         try {
-            const info = await this.transporter.sendMail({
-                from: `"Expense Tracker" <${process.env.SMTP_USER}>`, // Sender address
-                to: options.to,
+            // Validate API Key presence
+            if (!process.env.BREVO_API_KEY) {
+                throw new Error('BREVO_API_KEY is missing in environment variables');
+            }
+
+            const senderEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev'; // Fallback just in case, but should be set
+
+            const data = {
+                sender: { email: senderEmail, name: 'Expense Tracker' },
+                to: [{ email: options.to }],
                 subject: options.subject,
-                html: options.html
+                htmlContent: options.html
+            };
+
+            const response = await axios.post(this.apiUrl, data, {
+                headers: {
+                    'api-key': process.env.BREVO_API_KEY,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                timeout: 5000 // 5s timeout
             });
 
-            console.log(`✅ Email sent to ${options.to}. MessageId: ${info.messageId}`);
-        } catch (error) {
-            console.error('❌ Email sending error:', error);
-            console.error('Stack:', error);
-            // Fallback: Log content for debugging/manual recovery
+            console.log(`✅ Email sent to ${options.to}. MessageId: ${(response.data as any)?.messageId}`);
+        } catch (error: any) {
+            console.error('❌ Brevo API sending error:', error?.response?.data || error.message);
+
+            // Fallback for MVP/No-Domain: Log the content so admin can see the link
             console.log('⚠️ FALLBACK - EMAIL CONTENT ⚠️');
             console.log(`To: ${options.to}`);
             console.log(`Subject: ${options.subject}`);
             console.log('content: ', options.html);
             console.log('⚠️ END FALLBACK ⚠️');
-
-            throw new Error('Failed to send email');
         }
     }
 
