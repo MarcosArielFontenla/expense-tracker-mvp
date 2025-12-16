@@ -189,6 +189,7 @@ router.post('/reset-password', resetPasswordValidation, validateRequest, asyncHa
     user.passwordHash = passwordHash;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
+    user.emailVerified = true;
     await userRepository.save(user);
 
     // Audit Log
