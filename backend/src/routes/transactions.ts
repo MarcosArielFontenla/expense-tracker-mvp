@@ -188,6 +188,21 @@ router.post('/', authMiddleware, checkPlanLimit('transactions'), transactionVali
     res.status(201).json(transaction);
 }));
 
+// Get single transaction
+router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+    const transactionRepository = AppDataSource.getRepository(Transaction);
+    const transaction = await transactionRepository.findOne({
+        where: { id: req.params.id, userId: req.userId },
+        relations: ['category', 'account']
+    });
+
+    if (!transaction) {
+        throw new AppError('Transaction not found', 404);
+    }
+
+    res.json(transaction);
+}));
+
 // Update transaction
 router.put('/:id', authMiddleware, transactionValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
     const { type, amount, categoryId, accountId, date, note } = req.body;

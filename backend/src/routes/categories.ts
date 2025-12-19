@@ -19,6 +19,20 @@ router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res: Respo
     res.json(categories);
 }));
 
+// Get single category
+router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+    const categoryRepository = AppDataSource.getRepository(Category);
+    const category = await categoryRepository.findOne({
+        where: { id: req.params.id, userId: req.userId }
+    });
+
+    if (!category) {
+        throw new AppError('Category not found', 404);
+    }
+
+    res.json(category);
+}));
+
 // Create category
 router.post('/', authMiddleware, checkPlanLimit('categories'), asyncHandler(async (req: AuthRequest, res: Response) => {
 

@@ -60,6 +60,21 @@ router.get('/:month/:year', authMiddleware, asyncHandler(async (req: AuthRequest
     res.json(budgetsWithStatus);
 }));
 
+// Get single budget
+router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+    const budgetRepository = AppDataSource.getRepository(Budget);
+    const budget = await budgetRepository.findOne({
+        where: { id: req.params.id, userId: req.userId },
+        relations: ['category']
+    });
+
+    if (!budget) {
+        throw new AppError('Budget not found', 404);
+    }
+
+    res.json(budget);
+}));
+
 // Create budget
 router.post('/', authMiddleware, checkPlanLimit('budgets'), budgetValidation, validateRequest, asyncHandler(async (req: AuthRequest, res: Response) => {
     const { categoryId, amount, month, year, alertThreshold } = req.body;
