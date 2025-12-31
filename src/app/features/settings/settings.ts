@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CurrencyService, CurrencyInfo } from '../../core/services/currency.service';
 import { TimezoneService, TimezoneInfo } from '../../core/services/timezone.service';
+import { PlanUsageComponent } from '../../shared/components/plan-usage/plan-usage.component';
 
 @Component({
   selector: 'app-settings',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PlanUsageComponent],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
   standalone: true

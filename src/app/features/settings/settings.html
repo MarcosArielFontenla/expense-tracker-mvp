@@ -28,7 +28,8 @@
             <!-- Timezone Selector -->
             <div>
                 <label for="timezone" class="label">Zona Horaria</label>
-                <select id="timezone" [(ngModel)]="selectedTimezone" (ngModelChange)="onTimezoneChange()" class="input-field">
+                <select id="timezone" [(ngModel)]="selectedTimezone" (ngModelChange)="onTimezoneChange()"
+                    class="input-field">
                     <option *ngFor="let tz of timezones" [value]="tz.value">
                         {{ tz.label }} - {{ tz.region }}
                     </option>
@@ -36,6 +37,12 @@
                 <p class="mt-2 text-sm text-gray-500">
                     Hora actual en tu zona: <span class="font-medium text-gray-700">{{ currentTimeInZone }}</span>
                 </p>
+            </div>
+
+            <!-- Subscription Section -->
+            <div class="card bg-blue-50 border border-blue-100 p-4 rounded-lg">
+                <h3 class="text-sm font-semibold text-blue-900 mb-4">Suscripción Actual</h3>
+                <app-plan-usage></app-plan-usage>
             </div>
 
             <!-- Preview -->
